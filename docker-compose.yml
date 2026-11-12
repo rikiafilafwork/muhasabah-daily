@@ -1,0 +1,76 @@
+# Layanan lokal Muhasabah Daily.
+#   docker compose up -d db redis        # hanya basis data dan Redis (pengembangan)
+#   docker compose --profile full up     # semuanya di container (dirampungkan pada fase 6)
+name: muhasabah-daily
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-muhasabah}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-muhasabah}
+      POSTGRES_DB: ${POSTGRES_DB:-muhasabah}
+    ports:
+      - '5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./docker/postgres-init.sql:/docker-entrypoint-initdb.d/10-test-db.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ['redis-server', '--appendonly', 'yes']
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    profiles: ['full']
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-muhasabah}:${POSTGRES_PASSWORD:-muhasabah}@db:5432/${POSTGRES_DB:-muhasabah}
+      REDIS_URL: redis://redis:6379
+    ports:
+      - '3000:3000'
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:3000/api/v1/health']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  web:
+    profiles: ['full']
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    environment:
+      API_PROXY_TARGET: http://api:3000
+    ports:
+      - '5173:5173'
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  db-data:
+  redis-data:

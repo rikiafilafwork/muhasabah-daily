@@ -1,0 +1,32 @@
+{
+  "name": "muhasabah-daily",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Aplikasi produktivitas Muslim open source yang dijalankan lokal.",
+  "license": "MIT",
+  "packageManager": "pnpm@11.21.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @muhasabah/shared build && pnpm -r --parallel --filter @muhasabah/shared --filter api --filter web dev",
+    "build": "pnpm --filter @muhasabah/shared build && pnpm -r --filter api --filter web build",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm --filter @muhasabah/shared build && pnpm -r typecheck",
+    "test": "pnpm --filter @muhasabah/shared build && pnpm -r test",
+    "test:e2e": "pnpm --filter web test:e2e"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.14.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-vue": "^10.12.1",
+    "globals": "^17.14.0",
+    "prettier": "^3.9.10",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.72.2",
+    "vue-eslint-parser": "^10.4.2"
+  }
+}

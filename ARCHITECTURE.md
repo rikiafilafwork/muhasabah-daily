@@ -1,0 +1,479 @@
+# Arsitektur Muhasabah Daily
+
+Dokumen ini menjelaskan rancangan teknis Muhasabah Daily, aplikasi produktivitas Muslim open source yang dijalankan lokal. Referensi fitur: muslimpositive.id (M+ Life). Nama produk masih usulan.
+
+- Versi dokumen: 0.1 (draft, 11 November 2026)
+- Status keputusan: stack final Vue 3 + NestJS, tanpa hosting, tanpa pembayaran, AI opsional
+- Status implementasi: fase 0–1 selesai (lihat bagian 16)
+
+## 1. Tujuan dan batasan
+
+**Tujuan**
+
+- Satu aplikasi untuk Schedule, To-Do, Habits, Goals, Fokus, Dzikir, Hafidz, Jurnal, dan Catatan Kajian, disusun di sekitar waktu sholat.
+- Mudah dijalankan siapa pun dengan satu perintah (`docker compose up`).
+- Kode rapi dan teruji, karena proyek ini dipakai sebagai portofolio.
+
+**Batasan**
+
+- Tidak ada hosting, demo publik, pembayaran, lisensi, atau gerbang akses.
+- Konten pihak ketiga (teks Al-Qur'an, terjemah, audio) tidak disimpan di repo. Diunduh oleh seeder dan di-stream dari sumbernya.
+- Fitur AI opsional dan mati bila API key kosong.
+- Satu bahasa (TypeScript) di seluruh stack.
+
+## 2. Gambaran sistem
+
+```mermaid
+flowchart LR
+  U[Pengguna<br/>browser] -->|HTTPS/HTTP| W[Web<br/>Vue 3 + Vite]
+  W -->|REST + JWT| A[API<br/>NestJS]
+  A --> P[(PostgreSQL)]
+  A --> R[(Redis)]
+  A -.->|BullMQ| Q[Worker<br/>proses yang sama atau terpisah]
+  Q --> R
+  A -->|waktu sholat| AD[AlAdhan API]
+  Q -->|seed teks dan terjemah| QC[AlQuran Cloud / data Kemenag]
+  W -->|stream audio| AU[Sumber audio murottal]
+  Q -.->|opsional| AI[Penyedia AI<br/>API key di .env]
+```
+
+| Komponen   | Peran                                                                                                  |
+| ---------- | ------------------------------------------------------------------------------------------------------ |
+| Web        | SPA Vue 3. Semua tampilan dan logika interaksi (timer fokus, counter dzikir, pemutar Hafidz).          |
+| API        | NestJS. Autentikasi, aturan bisnis, akses data, integrasi eksternal.                                   |
+| PostgreSQL | Penyimpanan utama data pengguna dan konten hasil seed.                                                 |
+| Redis      | Cache (waktu sholat, ayat), antrean BullMQ, rate limit.                                                |
+| Worker     | Menjalankan job latar: seeding data, AI Polish, pengingat. Pada v0.1 berjalan di proses API yang sama. |
+
+## 3. Struktur repo (monorepo pnpm)
+
+```
+muhasabah-daily/
+├─ apps/
+│  ├─ api/                 # NestJS
+│  │  ├─ src/
+│  │  │  ├─ main.ts
+│  │  │  ├─ setup-app.ts   # prefix, helmet, cookie, CORS (dipakai main dan test)
+│  │  │  ├─ app.module.ts
+│  │  │  ├─ common/        # guard, filter, decorator, exception
+│  │  │  ├─ config/        # validasi env (zod)
+│  │  │  ├─ prisma/        # PrismaModule dan PrismaService
+│  │  │  ├─ redis/         # klien ioredis
+│  │  │  ├─ queue/         # koneksi BullMQ dan nama antrean
+│  │  │  └─ modules/
+│  │  │     ├─ auth/
+│  │  │     ├─ users/
+│  │  │     ├─ prayer-times/
+│  │  │     ├─ health/
+│  │  │     ├─ schedule/       # fase 2
+│  │  │     ├─ tasks/          # fase 2 (projects + tasks)
+│  │  │     ├─ habits/         # fase 2
+│  │  │     ├─ goals/          # fase 2
+│  │  │     ├─ focus/          # fase 3
+│  │  │     ├─ dhikr/          # fase 3
+│  │  │     ├─ quran/          # fase 5, data ayat, bukan fitur hafalan
+│  │  │     ├─ memorization/   # Hafidz (fase 5)
+│  │  │     ├─ journal/        # + AI Polish (fase 5)
+│  │  │     └─ lecture-notes/  # fase 5
+│  │  ├─ prisma/
+│  │  │  ├─ schema.prisma
+│  │  │  ├─ migrations/
+│  │  │  └─ seed/          # habit_templates, dhikr_items, quran
+│  │  └─ test/             # integrasi API (Jest + Supertest)
+│  └─ web/                 # Vue 3 + Vite
+│     ├─ src/
+│     │  ├─ app/           # router, layout
+│     │  ├─ features/      # satu folder per modul (lihat bagian 5)
+│     │  ├─ shared/        # komponen UI, composable, util
+│     │  └─ api/           # klien HTTP bertipe
+│     └─ e2e/              # Playwright
+├─ packages/
+│  └─ shared/              # tipe, enum, skema validasi (zod) yang dipakai web dan api
+├─ docker/                 # skrip init container
+├─ docker-compose.yml
+├─ .env.example
+├─ DATA_SOURCES.md         # atribusi dan lisensi data pihak ketiga
+├─ ARCHITECTURE.md
+├─ CONTRIBUTING.md
+└─ LICENSE
+```
+
+Aturan ketergantungan: `web` dan `api` boleh memakai `packages/shared`. `web` tidak boleh mengimpor dari `api` dan sebaliknya (ditegakkan oleh ESLint `no-restricted-imports`).
+
+## 4. Backend (NestJS)
+
+### 4.1 Prinsip
+
+- Satu modul per fitur. Setiap modul berisi `controller`, `service`, `dto`, dan (bila perlu) `repository` tipis di atas Prisma.
+- Controller hanya memvalidasi dan memetakan request. Aturan bisnis ada di service.
+- Semua data milik pengguna difilter dengan `userId` dari token. Tidak ada endpoint yang menerima `userId` dari klien.
+- Validasi global dengan `ZodValidationPipe` dari `nestjs-zod`. Skema berasal dari `packages/shared` dan memakai `.strict()` (padanan `whitelist` + `forbidNonWhitelisted`).
+- Dokumentasi API otomatis dengan Swagger di `/docs` (hanya saat `NODE_ENV != production`).
+
+### 4.2 Modul dan tanggung jawab
+
+| Modul         | Tanggung jawab                                             | Fase |
+| ------------- | ---------------------------------------------------------- | ---- |
+| auth          | Daftar, masuk, refresh token, keluar                       | 1    |
+| users         | Profil, lokasi, zona waktu, tema, hapus akun               | 1    |
+| prayer-times  | Ambil dan cache waktu sholat, hitung sholat berikutnya     | 1    |
+| health        | Cek koneksi database dan Redis                             | 1    |
+| schedule      | Event dan agenda, tampilan hari/minggu/bulan               | 2    |
+| tasks         | Proyek dan tugas, prioritas, deadline, fokus hari ini      | 2    |
+| habits        | Habit, log harian, insight (streak, konsistensi, proyeksi) | 2    |
+| goals         | Target numerik, tautan ke habit, progres                   | 2    |
+| focus         | Riwayat sesi fokus                                         | 3    |
+| dhikr         | Konten dzikir dan log hitungan harian                      | 3    |
+| quran         | Sajikan data surah dan ayat dari database lokal            | 5    |
+| memorization  | Rencana hafalan dan tahap tikrar                           | 5    |
+| journal       | Jurnal harian dan AI Polish                                | 5    |
+| lecture-notes | Catatan kajian dengan rujukan ayat                         | 5    |
+
+### 4.3 Autentikasi dan sesi
+
+- Kata sandi di-hash dengan Argon2id (m=19 MiB, t=2, p=1). Login dengan email tak dikenal tetap menjalankan verifikasi hash tiruan agar waktu respons seragam.
+- Access token JWT HS256 berumur pendek (15 menit), dikirim lewat header `Authorization: Bearer`. Web menyimpannya hanya di memori.
+- Refresh token acak 32 byte, disimpan sebagai HMAC-SHA256 di tabel `refresh_tokens`, dikirim lewat cookie `rt` (`httpOnly`, `SameSite=Lax`, `Path=/api/v1/auth`, `Secure` di production). Dirotasi setiap dipakai. Jika token lama dipakai ulang (atau dua permintaan berebut token yang sama), seluruh keluarga token (`familyId`) dicabut.
+- `JwtAuthGuard` dipasang global. Endpoint terbuka ditandai dekorator `@Public()`.
+- Rate limit dengan `@nestjs/throttler`: global 120/menit, `/auth/*` 10/menit, `/auth/refresh` 30/menit.
+- Login Google (OAuth) menyusul setelah v1.0.
+
+### 4.4 Format respons dan error
+
+- Sukses: JSON langsung berisi data. Daftar memakai `{ items, nextCursor }`.
+- Error: `{ statusCode, code, message, details? }` lewat `AllExceptionsFilter`. `code` berupa string stabil (mis. `HABIT_NOT_FOUND`) yang didefinisikan di `packages/shared/src/errors.ts`.
+- Tanggal disimpan UTC (`timestamptz`). Tanggal harian (log habit, jurnal) disimpan sebagai `date` dalam zona waktu pengguna, lihat 6.2.
+
+### 4.5 Pekerjaan latar (BullMQ)
+
+| Antrean     | Pekerjaan                      | Pemicu                                       |
+| ----------- | ------------------------------ | -------------------------------------------- |
+| `seed`      | Unduh dan impor data Al-Qur'an | Perintah `pnpm seed:quran`                   |
+| `ai`        | AI Polish jurnal               | Permintaan pengguna                          |
+| `reminders` | Pengingat sholat dan agenda    | Jadwal `@nestjs/schedule` (fase 6, opsional) |
+
+Koneksi BullMQ (`src/queue/queue.module.ts`) sudah disiapkan; processor tiap antrean didaftarkan oleh modul fiturnya.
+
+## 5. Frontend (Vue 3)
+
+### 5.1 Teknologi
+
+Vue 3 (Composition API, `<script setup>`), Vite, TypeScript, Pinia, Vue Router, Tailwind CSS 4, TipTap untuk editor Catatan Kajian (fase 5). Tanpa SSR.
+
+### 5.2 Struktur fitur
+
+```
+src/features/habits/
+├─ components/      # HabitGrid.vue, HabitInsightCard.vue
+├─ composables/     # useHabits.ts, useHabitInsights.ts
+├─ stores/          # habits.store.ts
+├─ api.ts           # panggilan HTTP khusus fitur
+├─ routes.ts
+└─ index.ts         # satu-satunya pintu masuk yang diekspor
+```
+
+Fitur lain tidak boleh mengimpor isi folder fitur lain, hanya lewat `index.ts` (ditegakkan oleh ESLint).
+
+### 5.3 Pola penting
+
+- **Klien API bertipe:** tipe request dan respons dari `packages/shared`. Klien menangani refresh token otomatis dan mengulang request yang gagal 401 satu kali; permintaan paralel berbagi satu refresh.
+- **State:** Pinia untuk state lintas halaman (sesi, tema, waktu sholat). Data server dimuat per halaman lewat composable.
+- **Timer fokus:** hitung sisa waktu dari selisih `Date.now()` terhadap waktu mulai, bukan dari hitungan interval, supaya akurat saat tab di latar belakang. Pola yang sama sudah dipakai `useCountdown` untuk hitung mundur sholat.
+- **Counter dzikir:** hitungan di klien, disinkronkan ke API dengan debounce (mis. 1 detik setelah ketukan terakhir).
+- **Pemutar Hafidz:** state machine sederhana (`idle → playing(ayat, ulangan) → next → done`) di atas elemen `<audio>`. Urutan dan jumlah ulangan berasal dari `memorization_stages`.
+- **Tema:** kelas `dark` pada `<html>`, preferensi disimpan di profil pengguna (dengan salinan di `localStorage` agar halaman masuk tidak berkedip).
+- **Aksesibilitas:** semua kontrol dapat diakses keyboard, tautan "lewati ke konten", label form dan `aria-invalid`, kontras warna diperiksa untuk mode terang dan gelap.
+
+## 6. Model data
+
+### 6.1 Diagram relasi
+
+```mermaid
+erDiagram
+  User ||--o{ RefreshToken : has
+  User ||--o{ Event : has
+  User ||--o{ Project : has
+  Project ||--o{ Task : contains
+  User ||--o{ Habit : has
+  HabitTemplate ||--o{ Habit : "basis"
+  Habit ||--o{ HabitLog : records
+  User ||--o{ Goal : has
+  Goal ||--o{ GoalHabit : links
+  Habit ||--o{ GoalHabit : links
+  User ||--o{ FocusSession : has
+  Task ||--o{ FocusSession : "opsional"
+  DhikrItem ||--o{ DhikrLog : counted
+  User ||--o{ DhikrLog : has
+  User ||--o{ MemorizationPlan : has
+  MemorizationPlan ||--o{ MemorizationStage : has
+  User ||--o{ JournalEntry : has
+  User ||--o{ LectureNote : has
+  Surah ||--o{ Ayah : contains
+```
+
+### 6.2 Aturan data
+
+- Semua tabel milik pengguna punya `userId` dan indeks pada `(userId, ...)` untuk kueri utama.
+- `HabitLog`: unik pada `(habitId, date)`. `date` adalah tanggal lokal pengguna (tipe `date`), dihitung dari zona waktu di profil (`toLocalDate` di `packages/shared`).
+- `JournalEntry`: unik pada `(userId, date)`. Menyimpan `rawText` dan `polishedText` (nullable).
+- `Task.focusToday` boolean, di-reset lewat job harian atau dihitung dari `focusDate`.
+- `Surah` dan `Ayah` diisi oleh seeder, bersifat baca-saja. Kolom: `arabic`, `latin`, `translationId`, `audioUrl`. File audio tidak disimpan.
+- Hapus akun menghapus seluruh data pengguna (cascade).
+
+### 6.3 Cuplikan skema Prisma
+
+```prisma
+model Habit {
+  id         String     @id @default(cuid())
+  userId     String
+  templateId String?
+  name       String
+  position   Int        @default(0)
+  active     Boolean    @default(true)
+  createdAt  DateTime   @default(now())
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs       HabitLog[]
+  goals      GoalHabit[]
+
+  @@index([userId, active, position])
+}
+
+model HabitLog {
+  id      String   @id @default(cuid())
+  habitId String
+  date    DateTime @db.Date
+  done    Boolean  @default(true)
+  habit   Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@unique([habitId, date])
+}
+```
+
+## 7. Desain API
+
+Awalan `/api/v1`. Semua endpoint di bawah butuh token kecuali `/auth/*` dan `/health`.
+
+| Area         | Endpoint                                                                     | Keterangan                                         |
+| ------------ | ---------------------------------------------------------------------------- | -------------------------------------------------- |
+| Auth         | `POST /auth/register`, `/auth/login`, `/auth/refresh`, `/auth/logout`        |                                                    |
+| Profil       | `GET/PATCH/DELETE /me`                                                       | Lokasi, zona waktu, tema; `DELETE` menghapus akun  |
+| Waktu sholat | `GET /prayer-times?date=`                                                    | Pakai lokasi profil, hasil di-cache                |
+| Waktu sholat | `GET /prayer-times/next`                                                     | Sholat berikutnya dan hitung mundur                |
+| Schedule     | `GET /events?from=&to=`, `POST/PATCH/DELETE /events/:id`                     |                                                    |
+| Tugas        | `GET/POST /projects`, `GET/POST /tasks`, `PATCH/DELETE /tasks/:id`           | Filter `projectId`, `focusToday`, `due`            |
+| Habit        | `GET/POST /habits`, `PATCH/DELETE /habits/:id`, `PUT /habits/:id/logs/:date` | `PUT` bersifat idempoten                           |
+| Habit        | `GET /habits/insights?from=&to=`                                             | Streak, konsistensi, proyeksi                      |
+| Habit        | `GET /habit-templates`                                                       | Library 40+ habit                                  |
+| Goals        | `GET/POST /goals`, `PATCH/DELETE /goals/:id`, `PUT /goals/:id/habits`        |                                                    |
+| Fokus        | `POST /focus-sessions`, `GET /focus-sessions?from=&to=`                      |                                                    |
+| Dzikir       | `GET /dhikr?group=pagi\|petang\|tidur`                                       | Konten statis                                      |
+| Dzikir       | `PUT /dhikr/:id/logs/:date`                                                  | Set hitungan harian                                |
+| Al-Qur'an    | `GET /quran/surahs`, `GET /quran/surahs/:id/ayahs?from=&to=`                 | Fase 5                                             |
+| Hafidz       | `GET/POST /memorization-plans`, `PUT /memorization-plans/:id/stages`         | Fase 5                                             |
+| Jurnal       | `GET/PUT /journal/:date`, `POST /journal/:date/polish`                       | `polish` mengembalikan 202 dan hasil lewat polling |
+| Kajian       | `GET/POST/PATCH/DELETE /lecture-notes`                                       | Fase 5                                             |
+| Sistem       | `GET /health`                                                                | Cek API, database, Redis                           |
+
+Konvensi: `PATCH` untuk perubahan sebagian, `PUT` pada sumber daya yang kuncinya sudah diketahui (tanggal), kursor untuk paginasi daftar panjang.
+
+## 8. Alur utama
+
+### 8.1 Waktu sholat
+
+```mermaid
+sequenceDiagram
+  participant W as Web
+  participant A as API
+  participant R as Redis
+  participant AD as AlAdhan
+  W->>A: GET /prayer-times?date=2026-11-11
+  A->>R: GET pt:{lat,lng}:{date}:{method}
+  alt cache hit
+    R-->>A: data
+  else cache miss
+    A->>AD: timings (method 20, Kemenag RI)
+    AD-->>A: jadwal
+    A->>R: SET dengan TTL sampai akhir hari
+  end
+  A-->>W: jadwal + sholat berikutnya
+```
+
+- Kunci cache memakai koordinat yang dibulatkan 2 desimal (`pt:-6.21,106.85:2026-11-11:20`) agar pengguna di kota yang sama berbagi cache. TTL sampai tengah malam lokal pengguna (minimal 1 jam).
+- Setiap hasil juga disimpan sebagai `pt:last:{lat,lng}:20` (30 hari). Jika AlAdhan gagal, jadwal terakhir itu digeser ke tanggal yang diminta dan dikembalikan dengan `stale: true`. Tanpa cache sama sekali, API membalas 503 `PRAYER_TIMES_UNAVAILABLE`. Antarmuka tetap bisa dipakai tanpa blok sholat.
+- Redis hanya cache: bila Redis gagal, API tetap mengambil langsung dari AlAdhan.
+- Hitung "sholat berikutnya" dan hitung mundur di klien dari jadwal yang sudah ada (`getNextPrayer` di `packages/shared`). Setelah Isya, klien memuat jadwal esok hari untuk Subuh.
+
+### 8.2 Insight habit
+
+Dihitung di server dari `HabitLog` pada rentang tanggal:
+
+- **Check-in:** jumlah log selesai.
+- **Streak terbaik:** deret hari berurutan terpanjang.
+- **Konsistensi:** log selesai dibagi jumlah hari aktif dalam rentang, dalam persen.
+- **Proyeksi minggu depan:** rata-rata check-in per minggu dari 4 minggu terakhir, dibulatkan.
+
+Fungsi perhitungan dibuat murni (tanpa akses database) agar mudah di-unit test dengan data tetap.
+
+### 8.3 Progres Goal
+
+`progres = nilaiManual + Σ (log habit tertaut × bobot)`. Hasil dibatasi pada `target`. Nilai manual dan kontribusi habit ditampilkan terpisah agar pengguna paham asalnya.
+
+### 8.4 Seeding data Al-Qur'an
+
+1. `pnpm seed:quran` menjalankan job di antrean `seed`.
+2. Job mengunduh teks Arab, latin, dan terjemah dari sumber di `DATA_SOURCES.md`.
+3. Data di-upsert ke `Surah` dan `Ayah` secara idempoten (aman dijalankan ulang).
+4. `audioUrl` diisi dengan URL sumber, tanpa mengunduh audio.
+5. Data hasil unduhan tidak masuk Git (`.gitignore`).
+
+### 8.5 AI Polish (opsional)
+
+```mermaid
+sequenceDiagram
+  participant W as Web
+  participant A as API
+  participant Q as Antrean ai
+  participant L as Penyedia AI
+  W->>A: POST /journal/:date/polish
+  alt AI_API_KEY kosong
+    A-->>W: 501 AI_DISABLED
+  else aktif
+    A->>Q: tambah job
+    A-->>W: 202 Accepted
+    Q->>L: prompt (teks mentah)
+    L-->>Q: teks rapi
+    Q->>A: simpan polishedText
+    W->>A: GET /journal/:date (polling)
+    A-->>W: rawText + polishedText
+  end
+```
+
+- Prompt menginstruksikan: rapikan ejaan dan struktur, pertahankan gaya bahasa dan makna, jangan menambah isi.
+- Teks mentah pengguna tidak pernah ditimpa. `polishedText` disimpan terpisah dan pengguna memilih memakai atau tidak.
+- Batas: panjang input maksimum dan jumlah panggilan per pengguna per hari (nilai di env).
+- Teks jurnal dikirim ke penyedia AI hanya bila pengguna menekan tombol Poles. Beri catatan privasi di antarmuka.
+
+## 9. Konfigurasi
+
+Semua konfigurasi lewat variabel lingkungan, divalidasi dengan zod saat aplikasi mulai (`apps/api/src/config/env.ts`). Aplikasi menolak berjalan bila ada variabel wajib yang hilang.
+
+| Variabel                 | Wajib | Contoh / keterangan                                   |
+| ------------------------ | ----- | ----------------------------------------------------- |
+| `DATABASE_URL`           | ya    | `postgresql://user:pass@db:5432/muhasabah`            |
+| `REDIS_URL`              | ya    | `redis://redis:6379`                                  |
+| `JWT_ACCESS_SECRET`      | ya    | String acak, minimal 32 karakter                      |
+| `JWT_REFRESH_SECRET`     | ya    | String acak, minimal 32 karakter, berbeda dari access |
+| `ALADHAN_BASE_URL`       | tidak | Default `https://api.aladhan.com/v1`                  |
+| `ALADHAN_TIMEOUT_MS`     | tidak | Default 5000                                          |
+| `JWT_ACCESS_TTL_SECONDS` | tidak | Default 900                                           |
+| `REFRESH_TOKEN_TTL_DAYS` | tidak | Default 30                                            |
+| `AI_PROVIDER`            | tidak | Kosong berarti AI mati                                |
+| `AI_API_KEY`             | tidak | Kunci milik pengguna sendiri                          |
+| `AI_DAILY_LIMIT`         | tidak | Default 10 panggilan per pengguna per hari            |
+| `CORS_ORIGIN`            | tidak | Default `http://localhost:5173` (pisahkan koma)       |
+| `LOG_LEVEL`              | tidak | Default `info`                                        |
+
+`.env.example` berisi semua nama variabel tanpa nilai rahasia. `.env` tidak boleh masuk Git.
+
+## 10. Menjalankan lokal
+
+`docker-compose.yml` berisi empat layanan:
+
+| Layanan | Image / sumber                                    | Port |
+| ------- | ------------------------------------------------- | ---- |
+| `web`   | build `apps/web` (dev server Vite), profil `full` | 5173 |
+| `api`   | build `apps/api`, profil `full`                   | 3000 |
+| `db`    | `postgres:17-alpine`                              | 5432 |
+| `redis` | `redis:7-alpine`                                  | 6379 |
+
+Alur awal:
+
+```bash
+cp .env.example .env              # isi JWT_ACCESS_SECRET dan JWT_REFRESH_SECRET
+docker compose up -d db redis
+pnpm install
+pnpm --filter api db:deploy       # migrasi
+pnpm --filter api seed            # habit_templates dan dhikr_items (fase 2–3)
+pnpm --filter api seed:quran      # opsional, fase 5
+pnpm dev                          # web dan api
+```
+
+Alternatif: `docker compose --profile full up --build` menjalankan semuanya (API menjalankan migrasi saat start). Target akhir (fase 6): `docker compose up` saja sudah menjalankan semuanya, termasuk seed dasar.
+
+## 11. Pengujian
+
+| Lapisan       | Alat                           | Cakupan                                                      |
+| ------------- | ------------------------------ | ------------------------------------------------------------ |
+| Unit shared   | Vitest                         | Skema zod, `getNextPrayer`, tanggal lokal                    |
+| Unit API      | Jest                           | Fungsi murni: TTL cache, pemetaan AlAdhan, env, filter error |
+| Integrasi API | Jest + Supertest, database uji | Endpoint per modul, aturan kepemilikan data, rotasi token    |
+| Unit web      | Vitest + Vue Test Utils        | Klien API (refresh), hitung mundur; nanti timer, counter     |
+| E2E           | Playwright                     | Daftar, atur lokasi, waktu sholat, keluar/masuk, tema        |
+
+Aturan: test wajib untuk fungsi insight, kepemilikan data (pengguna A tidak bisa membaca data B), dan rotasi refresh token.
+
+Test integrasi memakai basis data `muhasabah_test` (dibuat otomatis oleh `docker/postgres-init.sql`) dan Redis DB 1. E2E memakai Redis DB 2 dan server AlAdhan tiruan (`apps/web/e2e/mock-aladhan.mjs`).
+
+## 12. CI (GitHub Actions)
+
+Pada setiap pull request (`.github/workflows/ci.yml`):
+
+1. Pasang dependensi dengan cache pnpm.
+2. Lint (ESLint) dan format (Prettier), cek tipe (`tsc --noEmit`, `vue-tsc`).
+3. Unit dan integrasi test (layanan PostgreSQL dan Redis lewat `services:`).
+4. Build `web` dan `api`.
+5. Pindai rahasia (gitleaks) dan audit dependensi.
+
+E2E Playwright dijalankan pada push ke cabang utama dan tag rilis. Tidak ada langkah deploy.
+
+## 13. Keamanan dan privasi
+
+- Kata sandi Argon2id, token berumur pendek, refresh token dirotasi dan di-hash di database.
+- Otorisasi per baris: semua kueri disaring `userId` dari token. Test khusus memverifikasinya.
+- Validasi input di setiap endpoint, batas ukuran body 100 kB, `helmet`, CORS dibatasi ke origin yang dikonfigurasi.
+- Rate limit pada endpoint autentikasi dan AI.
+- Jurnal berisi data pribadi. Jangan catat isi jurnal di log. Log hanya berisi id dan status; header `authorization` dan `cookie` disamarkan.
+- Rahasia hanya di `.env`. CI memindai kebocoran rahasia.
+- Hapus akun menghapus seluruh data pengguna.
+- Konten keagamaan: rujukan hadis dan sumber ayat selalu ditampilkan bersama kontennya.
+
+## 14. Observabilitas
+
+- Log terstruktur (JSON) dengan `pino` lewat `nestjs-pino`, dengan id permintaan di setiap baris. Header `x-request-id` dari klien diteruskan (bila valid) dan selalu dikembalikan di respons.
+- `GET /health` memeriksa koneksi database dan Redis, dipakai juga oleh healthcheck Docker.
+- Metrik dan tracing tidak dibuat di versi awal.
+
+## 15. Catatan keputusan (ADR ringkas)
+
+| #   | Keputusan                                      | Alasan                                             | Konsekuensi                                                            |
+| --- | ---------------------------------------------- | -------------------------------------------------- | ---------------------------------------------------------------------- |
+| 1   | Vue 3 + Vite tanpa SSR                         | Tidak ada situs publik yang perlu SEO              | Lebih sederhana, tidak ada landing page terpisah                       |
+| 2   | NestJS 11 + Prisma 6 + PostgreSQL              | Satu bahasa, skema bertipe, struktur modul jelas   | Perlu disiplin batas modul agar tidak saling bergantung                |
+| 3   | Monorepo pnpm dengan `packages/shared`         | Tipe dan validasi dipakai bersama                  | Perlu build paket shared sebelum app (skrip root menanganinya)         |
+| 4   | Data Al-Qur'an di-seed, tidak di-commit        | Menghindari masalah lisensi dan ukuran repo        | Pengguna perlu menjalankan seeder sekali                               |
+| 5   | Audio di-stream dari sumber                    | Tidak menyimpan audio                              | Bergantung pada ketersediaan sumber, perlu penanganan error di pemutar |
+| 6   | AI opsional lewat API key sendiri              | Tidak ada biaya yang ditanggung proyek             | Fitur tidak tersedia tanpa kunci                                       |
+| 7   | Tanggal harian disimpan sebagai tanggal lokal  | Streak dan log harian tidak bergeser di batas hari | Perubahan zona waktu pengguna perlu penanganan khusus                  |
+| 8   | Refresh token di cookie `httpOnly`             | Mengurangi risiko pencurian token lewat XSS        | Perlu konfigurasi CORS dan cookie yang benar; dev memakai proxy Vite   |
+| 9   | Validasi dengan Zod + `nestjs-zod`             | Satu skema untuk form web dan DTO API              | Swagger dihasilkan dari skema zod                                      |
+| 10  | Worker BullMQ menyatu dengan proses API (v0.1) | Lebih sederhana untuk dijalankan lokal             | Dapat dipisah ke entry point sendiri pada fase 6                       |
+
+## 16. Pemetaan ke fase pengerjaan
+
+| Fase | Bagian arsitektur yang dibangun                                                   | Status  |
+| ---- | --------------------------------------------------------------------------------- | ------- |
+| 0    | Repo, struktur monorepo, `LICENSE`, `DATA_SOURCES.md`, wireframe                  | selesai |
+| 1    | `auth`, `users`, `prayer-times`, Prisma dan migrasi, layout web, tema, CI         | selesai |
+| 2    | `schedule`, `tasks`, `habits`, `goals`, seeder `habit_templates`, insight         |         |
+| 3    | `focus`, `dhikr`, seeder `dhikr_items`, timer dan counter di web                  |         |
+| 4    | Poles UI, data contoh, tangkapan layar, tag v0.1                                  |         |
+| 5    | `quran`, `memorization`, `journal` + AI Polish, `lecture-notes`, seeder Al-Qur'an |         |
+| 6    | Docker Compose penuh, dokumentasi, template issue/PR, PWA opsional, tag v1.0      |         |
+
+## 17. Pertanyaan terbuka
+
+- Metode sinkronisasi hitungan dzikir saat koneksi terputus (antre di klien atau tolak).
+- ~~Apakah Worker dipisah proses sejak awal atau menyatu dengan API sampai fase 6.~~ Diputuskan: menyatu (ADR 10).
+- Pemilihan final penyedia AI dan model default.
+- Sumber data final dan lisensinya (lihat `DATA_SOURCES.md`).
+- Refresh antar-tab diserialkan di klien dengan Web Locks API agar dua tab tidak mengirim token yang sama (yang akan dianggap pemakaian ulang). Browser tanpa Web Locks masih bisa mengalami ini; opsi tambahan: masa tenggang beberapa detik di server untuk token yang baru dirotasi.

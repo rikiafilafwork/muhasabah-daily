@@ -1,0 +1,37 @@
+{
+  "name": "@muhasabah/shared",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Tipe, enum, dan skema validasi yang dipakai web dan api.",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && node scripts/fix-cjs.mjs",
+    "dev": "tsc -p tsconfig.esm.json --watch --preserveWatchOutput",
+    "typecheck": "tsc -p tsconfig.esm.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3",
+    "vitest": "^5.1.0"
+  }
+}

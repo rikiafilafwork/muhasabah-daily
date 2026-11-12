@@ -1,0 +1,42 @@
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
+import { authRoutes, useSessionStore } from '@/features/auth';
+import { comingSoonRoutes } from '@/features/coming-soon';
+import { dashboardRoutes } from '@/features/dashboard';
+import { profileRoutes } from '@/features/profile';
+
+declare module 'vue-router' {
+  interface RouteMeta {
+    requiresAuth?: boolean;
+    guestOnly?: boolean;
+    layout?: 'app' | 'auth';
+    title?: string;
+  }
+}
+
+const routes: RouteRecordRaw[] = [
+  ...authRoutes,
+  ...dashboardRoutes,
+  ...profileRoutes,
+  ...comingSoonRoutes,
+  { path: '/:pathMatch(.*)*', redirect: '/' },
+];
+
+export const router = createRouter({
+  history: createWebHistory(),
+  routes,
+});
+
+router.beforeEach(async (to) => {
+  const session = useSessionStore();
+  if (session.status === 'unknown') await session.bootstrap();
+
+  if (to.meta.requiresAuth && !session.isAuthenticated) {
+    return { name: 'login', query: to.fullPath !== '/' ? { redirect: to.fullPath } : undefined };
+  }
+  if (to.meta.guestOnly && session.isAuthenticated) return { name: 'dashboard' };
+  return true;
+});
+
+router.afterEach((to) => {
+  document.title = to.meta.title ? `${to.meta.title} · Muhasabah Daily` : 'Muhasabah Daily';
+});

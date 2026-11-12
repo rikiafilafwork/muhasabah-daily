@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ['v*']
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  TEST_DATABASE_URL: postgresql://muhasabah:muhasabah@localhost:5432/muhasabah_test
+  TEST_REDIS_URL: redis://localhost:6379/1
+
+jobs:
+  check:
+    name: Lint, tipe, test, build
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: muhasabah
+          POSTGRES_PASSWORD: muhasabah
+          POSTGRES_DB: muhasabah_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U muhasabah" --health-interval 5s --health-timeout 3s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @muhasabah/shared build
+      - name: Lint
+        run: pnpm lint
+      - name: Format
+        run: pnpm format:check
+      - name: Cek tipe
+        run: pnpm typecheck
+      - name: Test unit dan integrasi
+        run: pnpm test
+      - name: Build
+        run: pnpm build
+
+  security:
+    name: Pindai rahasia dan audit dependensi
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Audit dependensi produksi
+        run: pnpm audit --prod --audit-level high
+        continue-on-error: true
+
+  e2e:
+    name: E2E (Playwright)
+    # Hanya di cabang utama dan tag rilis (ARCHITECTURE.md bagian 12).
+    if: github.event_name == 'push'
+    needs: check
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: muhasabah
+          POSTGRES_PASSWORD: muhasabah
+          POSTGRES_DB: muhasabah_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U muhasabah" --health-interval 5s --health-timeout 3s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @muhasabah/shared build
+      - run: pnpm --filter web exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report
+          retention-days: 7

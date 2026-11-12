@@ -1,0 +1,53 @@
+// Skema basis data Muhasabah Daily. Lihat ARCHITECTURE.md bagian 6.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Theme {
+  light
+  dark
+  system
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  city         String?
+  latitude     Float?
+  longitude    Float?
+  timezone     String   @default("Asia/Jakarta")
+  theme        Theme    @default(system)
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(3)
+
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+/// Refresh token disimpan ter-hash. Satu `familyId` = satu rantai rotasi sejak login.
+model RefreshToken {
+  id           String    @id @default(cuid())
+  userId       String
+  familyId     String
+  tokenHash    String    @unique
+  expiresAt    DateTime  @db.Timestamptz(3)
+  revokedAt    DateTime? @db.Timestamptz(3)
+  replacedById String?
+  createdAt    DateTime  @default(now()) @db.Timestamptz(3)
+  userAgent    String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
+  @@map("refresh_tokens")
+}

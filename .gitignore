@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+# data hasil seeder pihak ketiga (lihat DATA_SOURCES.md)
+apps/api/prisma/seed/data/
+# Playwright
+apps/web/test-results/
+apps/web/playwright-report/
+apps/web/blob-report/
