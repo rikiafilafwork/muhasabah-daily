@@ -34,3 +34,21 @@ describe('tanggal lokal', () => {
     expect(addDays('2026-11-30', 1)).toBe('2026-12-01');
   });
 });
+
+import { startOfWeek, toLocalTime, weekdayIndex, zonedTimeToUtc } from './date';
+
+describe('konversi zona waktu', () => {
+  it('zonedTimeToUtc dan toLocalTime saling membalik', () => {
+    const at = zonedTimeToUtc('2026-11-12', '19:30', 'Asia/Jakarta');
+    expect(at.toISOString()).toBe('2026-11-12T12:30:00.000Z');
+    expect(toLocalTime(at, 'Asia/Jakarta')).toBe('19:30');
+    expect(zonedTimeToUtc('2026-07-01', '00:00', 'America/New_York').toISOString()).toBe(
+      '2026-07-01T04:00:00.000Z',
+    );
+  });
+  it('minggu dimulai hari Senin', () => {
+    expect(weekdayIndex('2026-11-16')).toBe(0); // Senin
+    expect(weekdayIndex('2026-11-15')).toBe(6); // Ahad
+    expect(startOfWeek('2026-11-15')).toBe('2026-11-09');
+  });
+});

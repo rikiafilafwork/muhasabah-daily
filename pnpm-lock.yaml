@@ -132,9 +132,6 @@ importers:
       dotenv:
         specifier: ^18.0.10
         version: 18.0.10
-      dotenv-cli:
-        specifier: ^11.1.0
-        version: 11.1.0
       jest:
         specifier: ^30.5.2
         version: 30.5.2(@types/node@24.19.2)(supports-color@8.1.1)(ts-node@10.9.2(@types/node@24.19.2)(typescript@5.9.3))
@@ -2350,10 +2347,6 @@ packages:
   diff@4.0.4:
     resolution: {integrity: sha512-X07nttJQkwkfKfvTPG/KSnE2OMdcUCao6+eXF3wmnIQRn2aPAHH3VxDbDOdegkd6JbPsXqShpvEOHfAT+nCNwQ==}
     engines: {node: '>=0.3.1'}
-
-  dotenv-cli@11.1.0:
-    resolution: {integrity: sha512-YUBODAS0puvSc9bGdu07o1GSouVn63xDazqZqvT99Hta4nPqZ1jTdBcz12dDdxSC9jYbVlpWlnu0IJaMR8TIEQ==}
-    hasBin: true
 
   dotenv-expand@12.0.3:
     resolution: {integrity: sha512-uc47g4b+4k/M/SeaW1y4OApx+mtLWl92l5LMPP0GNXctZqELk+YGgOPIIC5elYmUH4OuoK3JLhuRUYegeySiFA==}
@@ -6756,13 +6749,6 @@ snapshots:
       wrappy: 1.0.2
 
   diff@4.0.4: {}
-
-  dotenv-cli@11.1.0:
-    dependencies:
-      cross-spawn: 7.0.6
-      dotenv: 17.4.1
-      dotenv-expand: 12.0.3
-      minimist: 1.2.8
 
   dotenv-expand@12.0.3:
     dependencies:

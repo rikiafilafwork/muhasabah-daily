@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useSessionStore } from '@/features/auth';
+import { TodayHabitsWidget } from '@/features/habits';
 import { PrayerTimesCard } from '@/features/prayer-times';
-import { UiCard } from '@/shared';
+import { TodayAgendaWidget } from '@/features/schedule';
+import { TodayTasksWidget } from '@/features/tasks';
 
 const session = useSessionStore();
 
@@ -19,13 +21,6 @@ const greeting = computed(() => {
   if (hour < 18) return 'Selamat sore';
   return 'Selamat malam';
 });
-
-const upcoming = [
-  { title: 'Habit harian', text: 'Centang kebiasaan baik dan lihat streak-mu.', phase: 2 },
-  { title: 'To-Do & fokus hari ini', text: 'Susun tugas di sela waktu sholat.', phase: 2 },
-  { title: 'Dzikir pagi & petang', text: 'Penghitung dzikir dengan rujukan.', phase: 3 },
-  { title: 'Timer fokus', text: 'Sesi fokus yang tercatat otomatis.', phase: 3 },
-];
 </script>
 
 <template>
@@ -37,25 +32,10 @@ const upcoming = [
 
     <PrayerTimesCard />
 
-    <section aria-labelledby="upcoming-title">
-      <h2 id="upcoming-title" class="mb-3 text-sm font-semibold text-stone-500 dark:text-stone-400">
-        Segera hadir
-      </h2>
-      <div class="grid gap-4 sm:grid-cols-2">
-        <UiCard v-for="m in upcoming" :key="m.title">
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <h3 class="font-medium">{{ m.title }}</h3>
-              <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">{{ m.text }}</p>
-            </div>
-            <span
-              class="shrink-0 rounded bg-stone-100 px-2 py-0.5 text-xs text-stone-500 dark:bg-stone-800"
-            >
-              Fase {{ m.phase }}
-            </span>
-          </div>
-        </UiCard>
-      </div>
-    </section>
+    <div class="grid gap-6 md:grid-cols-2">
+      <TodayTasksWidget />
+      <TodayHabitsWidget />
+      <TodayAgendaWidget class="md:col-span-2" />
+    </div>
   </div>
 </template>

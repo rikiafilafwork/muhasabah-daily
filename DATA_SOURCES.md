@@ -9,6 +9,10 @@ Repo ini tidak menyimpan konten pihak ketiga. Data diambil saat aplikasi berjala
 | Audio murottal                       | Sumber audio publik (mis. CDN yang dirujuk AlQuran Cloud)                                          | Di-stream langsung dari sumber; hanya URL yang disimpan          | Perlu dikonfirmasi sebelum fase 5                         | Rencana (fase 5) |
 | Teks dzikir pagi, petang, dan tidur  | Kumpulan dzikir dengan rujukan hadis                                                               | Seeder `dhikr_items`; rujukan selalu ditampilkan bersama teks    | Perlu dikonfirmasi sebelum fase 3                         | Rencana (fase 3) |
 
+## Rujukan pada library habit
+
+Template habit ibadah (`apps/api/prisma/seed/habit-templates.ts`) menyertakan rujukan dalil bila sumbernya jelas, mis. Sholat Dhuha (HR. Muslim no. 720), Istighfar 100 kali (HR. Muslim no. 2702), Puasa Senin–Kamis (HR. Tirmidzi no. 747). Nomor hadis mengikuti penomoran yang umum dipakai (Fuad Abdul Baqi untuk Shahih Muslim). Rujukan ditampilkan bersama nama habit. Mohon verifikasi oleh pengelola sebelum rilis, dan kirim koreksi lewat pull request.
+
 Aturan:
 
 - Atribusi sumber selalu ditampilkan di antarmuka di dekat kontennya.

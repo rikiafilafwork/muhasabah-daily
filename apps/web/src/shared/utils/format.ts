@@ -28,3 +28,39 @@ export function formatDurationWords(totalSeconds: number): string {
   if (m > 0) return `${m} menit`;
   return 'kurang dari 1 menit';
 }
+
+/** Tanggal pendek, mis. "12 Nov". */
+export function formatShortDate(date: string): string {
+  return new Intl.DateTimeFormat('id-ID', {
+    timeZone: 'UTC',
+    day: 'numeric',
+    month: 'short',
+  }).format(new Date(`${date}T12:00:00Z`));
+}
+
+/** Nama hari singkat, mis. "Kam". */
+export function formatWeekdayShort(date: string): string {
+  return new Intl.DateTimeFormat('id-ID', { timeZone: 'UTC', weekday: 'short' }).format(
+    new Date(`${date}T12:00:00Z`),
+  );
+}
+
+/** Bulan dan tahun, mis. "November 2026". */
+export function formatMonthYear(date: string): string {
+  return new Intl.DateTimeFormat('id-ID', {
+    timeZone: 'UTC',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date(`${date}T12:00:00Z`));
+}
+
+/** Label tanggal relatif: Hari ini, Besok, Kemarin, atau tanggal pendek. */
+export function relativeDateLabel(date: string, today: string): string {
+  const diff = Math.round(
+    (Date.parse(`${date}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000,
+  );
+  if (diff === 0) return 'Hari ini';
+  if (diff === 1) return 'Besok';
+  if (diff === -1) return 'Kemarin';
+  return formatShortDate(date);
+}

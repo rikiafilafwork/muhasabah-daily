@@ -12,6 +12,10 @@ import { AppConfigModule } from './config/config.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
 import { PrayerTimesModule } from './modules/prayer-times/prayer-times.module';
+import { EventsModule } from './modules/events/events.module';
+import { GoalsModule } from './modules/goals/goals.module';
+import { HabitsModule } from './modules/habits/habits.module';
+import { TasksModule } from './modules/tasks/tasks.module';
 import { UsersModule } from './modules/users/users.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { QueueModule } from './queue/queue.module';
@@ -64,6 +68,10 @@ const REQUEST_ID_PATTERN = /^[\w-]{1,64}$/;
     UsersModule,
     PrayerTimesModule,
     HealthModule,
+    EventsModule,
+    TasksModule,
+    HabitsModule,
+    GoalsModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },

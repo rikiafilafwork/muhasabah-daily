@@ -1,11 +1,15 @@
 export { default as UiAlert } from './components/UiAlert.vue';
 export { default as UiButton } from './components/UiButton.vue';
 export { default as UiCard } from './components/UiCard.vue';
+export { default as UiColorPicker } from './components/UiColorPicker.vue';
+export { default as UiDialog } from './components/UiDialog.vue';
 export { default as UiInput } from './components/UiInput.vue';
 export { default as UiSelect } from './components/UiSelect.vue';
+export { default as UiTextarea } from './components/UiTextarea.vue';
 export { useCountdown, formatCountdown } from './composables/useCountdown';
 export { useNow } from './composables/useNow';
 export { useTheme } from './composables/useTheme';
+export { useZodForm } from './composables/useZodForm';
+export * from './utils/colors';
 export * from './utils/format';
 export * from './utils/locations';
-export { useZodForm } from './composables/useZodForm';

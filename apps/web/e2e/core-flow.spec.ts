@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-const unique = () => `e2e-${Date.now()}-${Math.floor(Math.random() * 1e6)}@example.com`;
+import { uniqueEmail as unique } from './helpers';
 
 test('daftar, atur lokasi, lihat waktu sholat, keluar, lalu masuk lagi', async ({ page }) => {
   const email = unique();

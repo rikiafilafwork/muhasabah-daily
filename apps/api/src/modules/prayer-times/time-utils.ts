@@ -1,29 +1,8 @@
-import { addDays, toLocalDate } from '@muhasabah/shared';
-
-/** Selisih (ms) zona waktu `timeZone` terhadap UTC pada instan tertentu. */
-export function timeZoneOffsetMs(instant: Date, timeZone: string): number {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    hourCycle: 'h23',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  }).formatToParts(instant);
-  const n = (t: string) => Number(parts.find((p) => p.type === t)?.value);
-  const asUtc = Date.UTC(n('year'), n('month') - 1, n('day'), n('hour'), n('minute'), n('second'));
-  return asUtc - Math.floor(instant.getTime() / 1000) * 1000;
-}
+import { addDays, toLocalDate, zonedTimeToUtc } from '@muhasabah/shared';
 
 /** Instan UTC dari tengah malam (00:00) tanggal lokal `date` pada `timeZone`. */
 export function startOfLocalDay(date: string, timeZone: string): Date {
-  const guess = Date.parse(`${date}T00:00:00Z`);
-  let result = guess - timeZoneOffsetMs(new Date(guess), timeZone);
-  // Hitung ulang sekali untuk zona dengan DST.
-  result = guess - timeZoneOffsetMs(new Date(result), timeZone);
-  return new Date(result);
+  return zonedTimeToUtc(date, '00:00', timeZone);
 }
 
 const HOUR = 3600;

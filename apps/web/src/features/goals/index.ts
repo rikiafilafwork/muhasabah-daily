@@ -1,0 +1,1 @@
+export { goalsRoutes } from './routes';

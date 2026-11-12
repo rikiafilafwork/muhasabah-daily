@@ -8,14 +8,13 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Beranda', to: '/', icon: 'M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z' },
-  { label: 'Jadwal', to: '/schedule', icon: 'M4 5h16v16H4zM4 9h16M8 3v4M16 3v4', phase: 2 },
-  { label: 'To-Do', to: '/tasks', icon: 'M9 11l3 3 8-8M4 12v7h14', phase: 2 },
-  { label: 'Habit', to: '/habits', icon: 'M5 13l4 4L19 7', phase: 2 },
+  { label: 'Jadwal', to: '/schedule', icon: 'M4 5h16v16H4zM4 9h16M8 3v4M16 3v4' },
+  { label: 'To-Do', to: '/tasks', icon: 'M9 11l3 3 8-8M4 12v7h14' },
+  { label: 'Habit', to: '/habits', icon: 'M5 13l4 4L19 7' },
   {
     label: 'Goals',
     to: '/goals',
     icon: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zm0-5a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
-    phase: 2,
   },
   {
     label: 'Fokus',

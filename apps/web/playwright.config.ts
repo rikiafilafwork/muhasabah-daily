@@ -42,7 +42,8 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
     },
     {
-      command: 'pnpm exec prisma migrate deploy && pnpm exec nest build && node dist/main.js',
+      command:
+        'pnpm exec prisma migrate deploy && pnpm exec ts-node --transpile-only prisma/seed/index.ts && pnpm exec nest build && node dist/main.js',
       cwd: '../api',
       url: `http://localhost:${API_PORT}/api/v1/health`,
       env: apiEnv,

@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { ErrorCode, type Profile, type UpdateProfileInput } from '@muhasabah/shared';
+import { ErrorCode, toLocalDate, type Profile, type UpdateProfileInput } from '@muhasabah/shared';
 import { AppException } from '../../common/app.exception';
 import { PrismaService } from '../../prisma/prisma.service';
 import { toProfile } from './users.mapper';
@@ -28,6 +28,15 @@ export class UsersService {
     await this.findById(userId);
     const user = await this.prisma.user.update({ where: { id: userId }, data: input });
     return toProfile(user);
+  }
+
+  /** Zona waktu dan tanggal hari ini (lokal) milik pengguna. */
+  async getClock(
+    userId: string,
+    now: Date = new Date(),
+  ): Promise<{ timezone: string; today: string }> {
+    const user = await this.findById(userId);
+    return { timezone: user.timezone, today: toLocalDate(now, user.timezone) };
   }
 
   /** Menghapus akun dan seluruh data milik pengguna (cascade di basis data). */

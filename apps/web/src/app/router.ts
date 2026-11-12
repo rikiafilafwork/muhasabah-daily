@@ -2,7 +2,11 @@ import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { authRoutes, useSessionStore } from '@/features/auth';
 import { comingSoonRoutes } from '@/features/coming-soon';
 import { dashboardRoutes } from '@/features/dashboard';
+import { goalsRoutes } from '@/features/goals';
+import { habitsRoutes } from '@/features/habits';
 import { profileRoutes } from '@/features/profile';
+import { scheduleRoutes } from '@/features/schedule';
+import { tasksRoutes } from '@/features/tasks';
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -17,6 +21,10 @@ const routes: RouteRecordRaw[] = [
   ...authRoutes,
   ...dashboardRoutes,
   ...profileRoutes,
+  ...scheduleRoutes,
+  ...tasksRoutes,
+  ...habitsRoutes,
+  ...goalsRoutes,
   ...comingSoonRoutes,
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ];

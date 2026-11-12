@@ -9,6 +9,7 @@ import { REDIS } from '../src/redis/redis.module';
 import { setupApp } from '../src/setup-app';
 import { AladhanClient } from '../src/modules/prayer-times/aladhan.client';
 import { ThrottlerStorage } from '@nestjs/throttler';
+import { seedHabitTemplates } from '../prisma/seed/habit-templates';
 
 export const P = '/api/v1';
 
@@ -61,6 +62,7 @@ export async function createTestApp(opts: { throttle?: boolean } = {}): Promise<
   const app = moduleRef.createNestApplication<INestApplication<App>>({ bodyParser: false });
   setupApp(app);
   await app.init();
+  await seedHabitTemplates(app.get(PrismaService));
   return { app, prisma: app.get(PrismaService), redis: app.get(REDIS), aladhan };
 }
 
@@ -96,4 +98,23 @@ export function refreshCookieFrom(header: string | string[] | undefined): string
   const found = list.find((c) => c.startsWith('rt='));
   if (!found) throw new Error('cookie rt tidak ada');
   return found.split(';')[0];
+}
+
+/** Klien Supertest dengan token pengguna. */
+export function as(app: INestApplication<App>, token: string) {
+  const server = app.getHttpServer();
+  const auth = { Authorization: `Bearer ${token}` };
+  return {
+    get: (url: string) => request(server).get(`${P}${url}`).set(auth),
+    post: (url: string, body?: object) => request(server).post(`${P}${url}`).set(auth).send(body),
+    put: (url: string, body?: object) => request(server).put(`${P}${url}`).set(auth).send(body),
+    patch: (url: string, body?: object) => request(server).patch(`${P}${url}`).set(auth).send(body),
+    delete: (url: string) => request(server).delete(`${P}${url}`).set(auth),
+  };
+}
+
+/** Tanggal hari ini pada zona waktu default pengguna uji (Asia/Jakarta). */
+export function todayJakarta(offsetDays = 0): string {
+  const d = new Date(Date.now() + offsetDays * 86_400_000);
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(d);
 }

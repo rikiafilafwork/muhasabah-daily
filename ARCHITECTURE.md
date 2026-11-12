@@ -4,7 +4,7 @@ Dokumen ini menjelaskan rancangan teknis Muhasabah Daily, aplikasi produktivitas
 
 - Versi dokumen: 0.1 (draft, 11 November 2026)
 - Status keputusan: stack final Vue 3 + NestJS, tanpa hosting, tanpa pembayaran, AI opsional
-- Status implementasi: fase 0–1 selesai (lihat bagian 16)
+- Status implementasi: fase 0–2 selesai (lihat bagian 16)
 
 ## 1. Tujuan dan batasan
 
@@ -253,26 +253,26 @@ model HabitLog {
 
 Awalan `/api/v1`. Semua endpoint di bawah butuh token kecuali `/auth/*` dan `/health`.
 
-| Area         | Endpoint                                                                     | Keterangan                                         |
-| ------------ | ---------------------------------------------------------------------------- | -------------------------------------------------- |
-| Auth         | `POST /auth/register`, `/auth/login`, `/auth/refresh`, `/auth/logout`        |                                                    |
-| Profil       | `GET/PATCH/DELETE /me`                                                       | Lokasi, zona waktu, tema; `DELETE` menghapus akun  |
-| Waktu sholat | `GET /prayer-times?date=`                                                    | Pakai lokasi profil, hasil di-cache                |
-| Waktu sholat | `GET /prayer-times/next`                                                     | Sholat berikutnya dan hitung mundur                |
-| Schedule     | `GET /events?from=&to=`, `POST/PATCH/DELETE /events/:id`                     |                                                    |
-| Tugas        | `GET/POST /projects`, `GET/POST /tasks`, `PATCH/DELETE /tasks/:id`           | Filter `projectId`, `focusToday`, `due`            |
-| Habit        | `GET/POST /habits`, `PATCH/DELETE /habits/:id`, `PUT /habits/:id/logs/:date` | `PUT` bersifat idempoten                           |
-| Habit        | `GET /habits/insights?from=&to=`                                             | Streak, konsistensi, proyeksi                      |
-| Habit        | `GET /habit-templates`                                                       | Library 40+ habit                                  |
-| Goals        | `GET/POST /goals`, `PATCH/DELETE /goals/:id`, `PUT /goals/:id/habits`        |                                                    |
-| Fokus        | `POST /focus-sessions`, `GET /focus-sessions?from=&to=`                      |                                                    |
-| Dzikir       | `GET /dhikr?group=pagi\|petang\|tidur`                                       | Konten statis                                      |
-| Dzikir       | `PUT /dhikr/:id/logs/:date`                                                  | Set hitungan harian                                |
-| Al-Qur'an    | `GET /quran/surahs`, `GET /quran/surahs/:id/ayahs?from=&to=`                 | Fase 5                                             |
-| Hafidz       | `GET/POST /memorization-plans`, `PUT /memorization-plans/:id/stages`         | Fase 5                                             |
-| Jurnal       | `GET/PUT /journal/:date`, `POST /journal/:date/polish`                       | `polish` mengembalikan 202 dan hasil lewat polling |
-| Kajian       | `GET/POST/PATCH/DELETE /lecture-notes`                                       | Fase 5                                             |
-| Sistem       | `GET /health`                                                                | Cek API, database, Redis                           |
+| Area         | Endpoint                                                                                             | Keterangan                                                                            |
+| ------------ | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Auth         | `POST /auth/register`, `/auth/login`, `/auth/refresh`, `/auth/logout`                                |                                                                                       |
+| Profil       | `GET/PATCH/DELETE /me`                                                                               | Lokasi, zona waktu, tema; `DELETE` menghapus akun                                     |
+| Waktu sholat | `GET /prayer-times?date=`                                                                            | Pakai lokasi profil, hasil di-cache                                                   |
+| Waktu sholat | `GET /prayer-times/next`                                                                             | Sholat berikutnya dan hitung mundur                                                   |
+| Schedule     | `GET /events?from=&to=`, `POST/PATCH/DELETE /events/:id`                                             |                                                                                       |
+| Tugas        | `GET/POST /projects`, `PATCH/DELETE /projects/:id`, `GET/POST /tasks`, `GET/PATCH/DELETE /tasks/:id` | Filter `projectId` (`none` = Inbox), `focusToday`, `due`, `status`; paginasi `cursor` |
+| Habit        | `GET/POST /habits`, `PATCH/DELETE /habits/:id`, `PUT /habits/:id/logs/:date`                         | `GET` menyertakan log dalam `from..to` (default 7 hari); `PUT` idempoten              |
+| Habit        | `GET /habits/insights?from=&to=`                                                                     | Streak, konsistensi, proyeksi                                                         |
+| Habit        | `GET /habit-templates`                                                                               | Library 46 habit, dengan rujukan untuk habit ibadah                                   |
+| Goals        | `GET/POST /goals`, `PATCH/DELETE /goals/:id`, `PUT /goals/:id/habits`                                |                                                                                       |
+| Fokus        | `POST /focus-sessions`, `GET /focus-sessions?from=&to=`                                              |                                                                                       |
+| Dzikir       | `GET /dhikr?group=pagi\|petang\|tidur`                                                               | Konten statis                                                                         |
+| Dzikir       | `PUT /dhikr/:id/logs/:date`                                                                          | Set hitungan harian                                                                   |
+| Al-Qur'an    | `GET /quran/surahs`, `GET /quran/surahs/:id/ayahs?from=&to=`                                         | Fase 5                                                                                |
+| Hafidz       | `GET/POST /memorization-plans`, `PUT /memorization-plans/:id/stages`                                 | Fase 5                                                                                |
+| Jurnal       | `GET/PUT /journal/:date`, `POST /journal/:date/polish`                                               | `polish` mengembalikan 202 dan hasil lewat polling                                    |
+| Kajian       | `GET/POST/PATCH/DELETE /lecture-notes`                                                               | Fase 5                                                                                |
+| Sistem       | `GET /health`                                                                                        | Cek API, database, Redis                                                              |
 
 Konvensi: `PATCH` untuk perubahan sebagian, `PUT` pada sumber daya yang kuncinya sudah diketahui (tanggal), kursor untuk paginasi daftar panjang.
 
@@ -307,16 +307,31 @@ sequenceDiagram
 
 Dihitung di server dari `HabitLog` pada rentang tanggal:
 
-- **Check-in:** jumlah log selesai.
-- **Streak terbaik:** deret hari berurutan terpanjang.
-- **Konsistensi:** log selesai dibagi jumlah hari aktif dalam rentang, dalam persen.
-- **Proyeksi minggu depan:** rata-rata check-in per minggu dari 4 minggu terakhir, dibulatkan.
+- **Hari aktif:** dari `max(from, startDate habit)` sampai `min(to, hari ini)`. Hari mendatang dan hari sebelum habit dimulai tidak dihitung.
+- **Check-in:** jumlah log selesai dalam hari aktif.
+- **Streak terbaik:** deret hari berurutan terpanjang di dalam rentang.
+- **Streak berjalan:** deret yang berakhir hari ini, atau kemarin bila hari ini belum dicentang (tidak dibatasi rentang).
+- **Konsistensi:** check-in dibagi hari aktif, dalam persen.
+- **Proyeksi minggu depan:** laju harian dalam 4 minggu terakhir × 7, dibulatkan. Untuk habit yang lebih muda dari 4 minggu, laju dihitung dari hari aktifnya saja agar tidak terlalu rendah.
+- **Ringkasan:** jumlah check-in dan proyeksi, maksimum streak, konsistensi gabungan (Σ check-in / Σ hari aktif).
 
-Fungsi perhitungan dibuat murni (tanpa akses database) agar mudah di-unit test dengan data tetap.
+Fungsi perhitungan murni ada di `apps/api/src/modules/habits/habit-insights.ts` dan dites dengan data tetap.
+
+Aturan log: `PUT /habits/:id/logs/:date` dengan `{ done }` bersifat idempoten (`done: false` menghapus log). Tanggal setelah hari ini ditolak (`HABIT_LOG_FUTURE_DATE`), begitu juga tanggal sebelum `startDate` (`HABIT_LOG_BEFORE_START`); pengguna bisa memundurkan `startDate` untuk mengisi hari-hari sebelumnya.
 
 ### 8.3 Progres Goal
 
 `progres = nilaiManual + Σ (log habit tertaut × bobot)`. Hasil dibatasi pada `target`. Nilai manual dan kontribusi habit ditampilkan terpisah agar pengguna paham asalnya.
+
+Log habit dihitung sejak `startDate` goal (default tanggal goal dibuat), sehingga riwayat lama tidak langsung memenuhi goal baru. Fungsi `computeGoalProgress` ada di `packages/shared` agar web dan API memakai rumus yang sama. Habit yang ditautkan harus milik pengguna yang sama; menghapus habit melepas tautannya.
+
+### 8.3a Tugas dan jadwal
+
+- **Fokus hari ini** disimpan sebagai `Task.focusDate` (tanggal lokal). `focusToday` dihitung `focusDate == hari ini`, sehingga fokus kedaluwarsa sendiri saat hari berganti tanpa job harian.
+- Urutan tugas terbuka: tenggat (kosong di akhir), prioritas (tinggi dulu), waktu dibuat. Paginasi kursor memakai `id`; kursor milik pengguna lain ditolak (`INVALID_CURSOR`).
+- Menghapus proyek memindahkan tugasnya ke Inbox (`projectId = null`), tidak ikut menghapus.
+- Event menyimpan instan UTC. Event sepanjang hari disimpan dari tengah malam lokal sampai tengah malam berikutnya (akhir eksklusif). `GET /events?from=&to=` mengembalikan event yang beririsan dengan rentang (maks. 100 hari).
+- Tampilan hari pada web menyisipkan waktu sholat di antara agenda.
 
 ### 8.4 Seeding data Al-Qur'an
 
@@ -464,7 +479,7 @@ E2E Playwright dijalankan pada push ke cabang utama dan tag rilis. Tidak ada lan
 | ---- | --------------------------------------------------------------------------------- | ------- |
 | 0    | Repo, struktur monorepo, `LICENSE`, `DATA_SOURCES.md`, wireframe                  | selesai |
 | 1    | `auth`, `users`, `prayer-times`, Prisma dan migrasi, layout web, tema, CI         | selesai |
-| 2    | `schedule`, `tasks`, `habits`, `goals`, seeder `habit_templates`, insight         |         |
+| 2    | `schedule`, `tasks`, `habits`, `goals`, seeder `habit_templates`, insight         | selesai |
 | 3    | `focus`, `dhikr`, seeder `dhikr_items`, timer dan counter di web                  |         |
 | 4    | Poles UI, data contoh, tangkapan layar, tag v0.1                                  |         |
 | 5    | `quran`, `memorization`, `journal` + AI Polish, `lecture-notes`, seeder Al-Qur'an |         |

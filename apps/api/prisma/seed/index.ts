@@ -1,15 +1,15 @@
 /**
- * Seed dasar. Fase 2 menambahkan `habit_templates`, fase 3 `dhikr_items`.
- * Data Al-Qur'an memakai perintah terpisah (`seed:quran`, fase 5).
- * Semua seeder harus idempoten (upsert) sehingga aman dijalankan ulang.
+ * Seed dasar. Fase 3 menambahkan `dhikr_items`. Data Al-Qur'an memakai perintah
+ * terpisah (`seed:quran`, fase 5). Semua seeder idempoten (upsert).
  */
 import { PrismaClient } from '@prisma/client';
+import { seedHabitTemplates } from './habit-templates';
 
 async function main() {
   const prisma = new PrismaClient();
   try {
-    // Belum ada data dasar pada fase 1.
-    console.log('Seed dasar: belum ada data untuk fase 1.');
+    const n = await seedHabitTemplates(prisma);
+    console.log(`habit_templates: ${n} baris`);
   } finally {
     await prisma.$disconnect();
   }
