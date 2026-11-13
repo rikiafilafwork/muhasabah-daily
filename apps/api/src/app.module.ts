@@ -12,7 +12,9 @@ import { AppConfigModule } from './config/config.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
 import { PrayerTimesModule } from './modules/prayer-times/prayer-times.module';
+import { DhikrModule } from './modules/dhikr/dhikr.module';
 import { EventsModule } from './modules/events/events.module';
+import { FocusModule } from './modules/focus/focus.module';
 import { GoalsModule } from './modules/goals/goals.module';
 import { HabitsModule } from './modules/habits/habits.module';
 import { TasksModule } from './modules/tasks/tasks.module';
@@ -72,6 +74,8 @@ const REQUEST_ID_PATTERN = /^[\w-]{1,64}$/;
     TasksModule,
     HabitsModule,
     GoalsModule,
+    FocusModule,
+    DhikrModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },

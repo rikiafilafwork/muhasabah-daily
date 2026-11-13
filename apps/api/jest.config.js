@@ -9,7 +9,13 @@ module.exports = {
   // Test integrasi berbagi satu basis data, jadi dijalankan berurutan.
   maxWorkers: 1,
   projects: [
-    { ...base, displayName: 'unit', rootDir: 'src', testRegex: '.*\\.spec\\.ts$' },
+    {
+      ...base,
+      displayName: 'unit',
+      rootDir: '.',
+      roots: ['<rootDir>/src', '<rootDir>/prisma'],
+      testRegex: '.*\\.spec\\.ts$',
+    },
     {
       ...base,
       displayName: 'integration',

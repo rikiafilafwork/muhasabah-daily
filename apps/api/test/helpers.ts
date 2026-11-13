@@ -9,6 +9,7 @@ import { REDIS } from '../src/redis/redis.module';
 import { setupApp } from '../src/setup-app';
 import { AladhanClient } from '../src/modules/prayer-times/aladhan.client';
 import { ThrottlerStorage } from '@nestjs/throttler';
+import { seedDhikr } from '../prisma/seed/dhikr';
 import { seedHabitTemplates } from '../prisma/seed/habit-templates';
 
 export const P = '/api/v1';
@@ -63,6 +64,7 @@ export async function createTestApp(opts: { throttle?: boolean } = {}): Promise<
   setupApp(app);
   await app.init();
   await seedHabitTemplates(app.get(PrismaService));
+  await seedDhikr(app.get(PrismaService), { online: false });
   return { app, prisma: app.get(PrismaService), redis: app.get(REDIS), aladhan };
 }
 

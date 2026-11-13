@@ -2,6 +2,8 @@ import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { authRoutes, useSessionStore } from '@/features/auth';
 import { comingSoonRoutes } from '@/features/coming-soon';
 import { dashboardRoutes } from '@/features/dashboard';
+import { dhikrRoutes } from '@/features/dhikr';
+import { focusRoutes } from '@/features/focus';
 import { goalsRoutes } from '@/features/goals';
 import { habitsRoutes } from '@/features/habits';
 import { profileRoutes } from '@/features/profile';
@@ -25,6 +27,8 @@ const routes: RouteRecordRaw[] = [
   ...tasksRoutes,
   ...habitsRoutes,
   ...goalsRoutes,
+  ...focusRoutes,
+  ...dhikrRoutes,
   ...comingSoonRoutes,
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ];

@@ -8,3 +8,5 @@ export * from './events';
 export * from './tasks';
 export * from './habits';
 export * from './goals';
+export * from './focus';
+export * from './dhikr';

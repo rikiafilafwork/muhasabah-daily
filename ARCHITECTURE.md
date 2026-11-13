@@ -4,7 +4,7 @@ Dokumen ini menjelaskan rancangan teknis Muhasabah Daily, aplikasi produktivitas
 
 - Versi dokumen: 0.1 (draft, 11 November 2026)
 - Status keputusan: stack final Vue 3 + NestJS, tanpa hosting, tanpa pembayaran, AI opsional
-- Status implementasi: fase 0–2 selesai (lihat bagian 16)
+- Status implementasi: fase 0–3 selesai (lihat bagian 16)
 
 ## 1. Tujuan dan batasan
 
@@ -265,9 +265,9 @@ Awalan `/api/v1`. Semua endpoint di bawah butuh token kecuali `/auth/*` dan `/he
 | Habit        | `GET /habits/insights?from=&to=`                                                                     | Streak, konsistensi, proyeksi                                                         |
 | Habit        | `GET /habit-templates`                                                                               | Library 46 habit, dengan rujukan untuk habit ibadah                                   |
 | Goals        | `GET/POST /goals`, `PATCH/DELETE /goals/:id`, `PUT /goals/:id/habits`                                |                                                                                       |
-| Fokus        | `POST /focus-sessions`, `GET /focus-sessions?from=&to=`                                              |                                                                                       |
-| Dzikir       | `GET /dhikr?group=pagi\|petang\|tidur`                                                               | Konten statis                                                                         |
-| Dzikir       | `PUT /dhikr/:id/logs/:date`                                                                          | Set hitungan harian                                                                   |
+| Fokus        | `POST /focus-sessions`, `GET /focus-sessions?from=&to=`, `DELETE /focus-sessions/:id`                | `GET` menyertakan `summary` (total, sesi tuntas, detik per tanggal)                   |
+| Dzikir       | `GET /dhikr?group=pagi\|petang\|tidur&date=`, `GET /dhikr/summary?date=`                             | Konten + hitungan pengguna pada tanggal itu                                           |
+| Dzikir       | `PUT /dhikr/:id/logs/:date`                                                                          | Menetapkan (bukan menambah) hitungan harian; idempoten                                |
 | Al-Qur'an    | `GET /quran/surahs`, `GET /quran/surahs/:id/ayahs?from=&to=`                                         | Fase 5                                                                                |
 | Hafidz       | `GET/POST /memorization-plans`, `PUT /memorization-plans/:id/stages`                                 | Fase 5                                                                                |
 | Jurnal       | `GET/PUT /journal/:date`, `POST /journal/:date/polish`                                               | `polish` mengembalikan 202 dan hasil lewat polling                                    |
@@ -332,6 +332,19 @@ Log habit dihitung sejak `startDate` goal (default tanggal goal dibuat), sehingg
 - Menghapus proyek memindahkan tugasnya ke Inbox (`projectId = null`), tidak ikut menghapus.
 - Event menyimpan instan UTC. Event sepanjang hari disimpan dari tengah malam lokal sampai tengah malam berikutnya (akhir eksklusif). `GET /events?from=&to=` mengembalikan event yang beririsan dengan rentang (maks. 100 hari).
 - Tampilan hari pada web menyisipkan waktu sholat di antara agenda.
+
+### 8.3b Fokus
+
+- Logika timer murni di `apps/web/src/features/focus/timer.ts`: sisa waktu = `endsAt - Date.now()`, jeda menyimpan sisa dan tidak dihitung sebagai waktu fokus. State disimpan di `localStorage` sehingga timer bertahan saat halaman dimuat ulang dan selesai otomatis bila waktunya lewat saat tab tertutup.
+- Sesi fokus dicatat saat selesai (`completed`) atau dihentikan (`cancelled`); sesi di bawah 1 menit tidak dicatat. Server menolak `focusedSeconds` yang melebihi `endedAt - startedAt` (toleransi 5 detik).
+- `FocusSession.date` adalah tanggal lokal saat sesi dimulai, untuk ringkasan harian. Menghapus tugas tidak menghapus riwayat sesi (`taskId` menjadi null).
+- Bila waktu sholat masuk sebelum sesi berakhir, halaman Fokus menampilkan pengingat.
+
+### 8.3c Dzikir
+
+- Konten (`dhikr_items`) diisi seeder dari `apps/api/prisma/seed/dhikr-content.ts`. Satu baris per grup (`pagi-ayat-kursi`, `petang-ayat-kursi`, …) sehingga hitungan pagi dan petang terpisah.
+- Untuk dzikir berupa ayat, seeder mengambil teks rasm Utsmani dan terjemah Kemenag dari AlQuran Cloud, lalu membandingkan dengan teks bawaan (normalisasi tanpa harakat). Tanpa internet (`seed --offline`) teks bawaan dipakai.
+- Hitungan dikirim sebagai nilai akhir (`PUT … { count }`), bukan selisih, 1 detik setelah ketukan terakhir. Nilai yang belum terkirim disimpan di `localStorage` per pengguna dan dikirim ulang saat `online`, setiap 20 detik, dan saat tab disembunyikan. Error 4xx dibuang agar antrean tidak macet; error jaringan/5xx diulang. Logika antrean murni ada di `apps/web/src/features/dhikr/sync-queue.ts`.
 
 ### 8.4 Seeding data Al-Qur'an
 
@@ -480,14 +493,14 @@ E2E Playwright dijalankan pada push ke cabang utama dan tag rilis. Tidak ada lan
 | 0    | Repo, struktur monorepo, `LICENSE`, `DATA_SOURCES.md`, wireframe                  | selesai |
 | 1    | `auth`, `users`, `prayer-times`, Prisma dan migrasi, layout web, tema, CI         | selesai |
 | 2    | `schedule`, `tasks`, `habits`, `goals`, seeder `habit_templates`, insight         | selesai |
-| 3    | `focus`, `dhikr`, seeder `dhikr_items`, timer dan counter di web                  |         |
+| 3    | `focus`, `dhikr`, seeder `dhikr_items`, timer dan counter di web                  | selesai |
 | 4    | Poles UI, data contoh, tangkapan layar, tag v0.1                                  |         |
 | 5    | `quran`, `memorization`, `journal` + AI Polish, `lecture-notes`, seeder Al-Qur'an |         |
 | 6    | Docker Compose penuh, dokumentasi, template issue/PR, PWA opsional, tag v1.0      |         |
 
 ## 17. Pertanyaan terbuka
 
-- Metode sinkronisasi hitungan dzikir saat koneksi terputus (antre di klien atau tolak).
+- ~~Metode sinkronisasi hitungan dzikir saat koneksi terputus.~~ Diputuskan: antre di klien (8.3c).
 - ~~Apakah Worker dipisah proses sejak awal atau menyatu dengan API sampai fase 6.~~ Diputuskan: menyatu (ADR 10).
 - Pemilihan final penyedia AI dan model default.
 - Sumber data final dan lisensinya (lihat `DATA_SOURCES.md`).

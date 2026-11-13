@@ -20,13 +20,11 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'Fokus',
     to: '/focus',
     icon: 'M12 7v5l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z',
-    phase: 3,
   },
   {
     label: 'Dzikir',
     to: '/dhikr',
     icon: 'M12 3a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm0 6v12M7 14h10',
-    phase: 3,
   },
   {
     label: 'Hafidz',

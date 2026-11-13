@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useSessionStore } from '@/features/auth';
+import { DhikrTodayWidget } from '@/features/dhikr';
 import { TodayHabitsWidget } from '@/features/habits';
 import { PrayerTimesCard } from '@/features/prayer-times';
 import { TodayAgendaWidget } from '@/features/schedule';
@@ -35,7 +36,8 @@ const greeting = computed(() => {
     <div class="grid gap-6 md:grid-cols-2">
       <TodayTasksWidget />
       <TodayHabitsWidget />
-      <TodayAgendaWidget class="md:col-span-2" />
+      <DhikrTodayWidget />
+      <TodayAgendaWidget />
     </div>
   </div>
 </template>

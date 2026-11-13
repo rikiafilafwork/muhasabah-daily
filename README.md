@@ -2,7 +2,7 @@
 
 Aplikasi produktivitas Muslim open source yang dijalankan di komputermu sendiri. Jadwal, to-do, habit, goals, fokus, dzikir, hafalan, jurnal, dan catatan kajian disusun di sekitar waktu sholat.
 
-> Status: **fase 2** — autentikasi, profil, waktu sholat dengan hitung mundur, jadwal (hari/minggu/bulan, disisipi waktu sholat), to-do dengan proyek dan fokus hari ini, habit dengan library 46 template dan insight, serta goals yang tertaut ke habit. Modul lain menyusul sesuai [peta fase](ARCHITECTURE.md#16-pemetaan-ke-fase-pengerjaan).
+> Status: **fase 3** — autentikasi, profil, waktu sholat dengan hitung mundur, jadwal (hari/minggu/bulan, disisipi waktu sholat), to-do dengan proyek dan fokus hari ini, habit dengan library 46 template dan insight, serta goals yang tertaut ke habit, timer fokus yang tahan muat ulang dengan riwayat mingguan, serta dzikir pagi/petang/tidur dengan penghitung yang tetap berjalan saat offline. Modul lain menyusul sesuai [peta fase](ARCHITECTURE.md#16-pemetaan-ke-fase-pengerjaan).
 
 ## Stack
 
@@ -19,7 +19,7 @@ cp .env.example .env
 docker compose up -d db redis
 pnpm install
 pnpm --filter api db:deploy   # migrasi basis data
-pnpm --filter api seed        # library habit (aman diulang)
+pnpm --filter api seed        # library habit dan dzikir (aman diulang; tambah -- --offline tanpa internet)
 pnpm dev                      # web http://localhost:5173, API http://localhost:3000
 ```
 
@@ -46,7 +46,7 @@ docker compose --profile full up --build
 ## Struktur
 
 ```
-apps/api         NestJS: auth, users, prayer-times, events, tasks, habits, goals, health
+apps/api         NestJS: auth, users, prayer-times, events, tasks, habits, goals, focus, dhikr, health
 apps/web         Vue 3 SPA
 packages/shared  Tipe, kode error, dan skema zod yang dipakai web dan api
 ```
