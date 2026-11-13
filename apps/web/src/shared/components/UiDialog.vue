@@ -45,7 +45,7 @@ function onBackdrop(e: MouseEvent) {
         </div>
         <button
           type="button"
-          class="rounded-lg p-1.5 text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800"
+          class="rounded-lg p-1.5 text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800"
           @click="open = false"
         >
           <span class="sr-only">Tutup</span>

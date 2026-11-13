@@ -4,7 +4,7 @@ Dokumen ini menjelaskan rancangan teknis Muhasabah Daily, aplikasi produktivitas
 
 - Versi dokumen: 0.1 (draft, 11 November 2026)
 - Status keputusan: stack final Vue 3 + NestJS, tanpa hosting, tanpa pembayaran, AI opsional
-- Status implementasi: fase 0–3 selesai (lihat bagian 16)
+- Status implementasi: fase 0–4 selesai, rilis v0.1.0 (lihat bagian 16)
 
 ## 1. Tujuan dan batasan
 
@@ -430,15 +430,17 @@ Alternatif: `docker compose --profile full up --build` menjalankan semuanya (API
 
 ## 11. Pengujian
 
-| Lapisan       | Alat                           | Cakupan                                                      |
-| ------------- | ------------------------------ | ------------------------------------------------------------ |
-| Unit shared   | Vitest                         | Skema zod, `getNextPrayer`, tanggal lokal                    |
-| Unit API      | Jest                           | Fungsi murni: TTL cache, pemetaan AlAdhan, env, filter error |
-| Integrasi API | Jest + Supertest, database uji | Endpoint per modul, aturan kepemilikan data, rotasi token    |
-| Unit web      | Vitest + Vue Test Utils        | Klien API (refresh), hitung mundur; nanti timer, counter     |
-| E2E           | Playwright                     | Daftar, atur lokasi, waktu sholat, keluar/masuk, tema        |
+| Lapisan       | Alat                           | Cakupan                                                                                                                                 |
+| ------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Unit shared   | Vitest                         | Skema zod, `getNextPrayer`, tanggal lokal                                                                                               |
+| Unit API      | Jest                           | Fungsi murni: TTL cache, pemetaan AlAdhan, env, filter error                                                                            |
+| Integrasi API | Jest + Supertest, database uji | Endpoint per modul, aturan kepemilikan data, rotasi token                                                                               |
+| Unit web      | Vitest + Vue Test Utils        | Klien API (refresh), hitung mundur; nanti timer, counter                                                                                |
+| E2E           | Playwright + axe-core          | Alur utama tiap modul, dzikir offline, timer (jam tiruan), audit WCAG 2.1 AA semua halaman dan dialog (terang/gelap), tata letak 390 px |
 
 Aturan: test wajib untuk fungsi insight, kepemilikan data (pengguna A tidak bisa membaca data B), dan rotasi refresh token.
+
+Server E2E menjalankan `seed --offline` dan `seed:demo` sehingga test tidak bergantung internet. Audit aksesibilitas dan tata letak berpindah halaman di dalam SPA, bukan memuat ulang, karena `/auth/refresh` dibatasi 30 kali per menit.
 
 Test integrasi memakai basis data `muhasabah_test` (dibuat otomatis oleh `docker/postgres-init.sql`) dan Redis DB 1. E2E memakai Redis DB 2 dan server AlAdhan tiruan (`apps/web/e2e/mock-aladhan.mjs`).
 
@@ -494,7 +496,7 @@ E2E Playwright dijalankan pada push ke cabang utama dan tag rilis. Tidak ada lan
 | 1    | `auth`, `users`, `prayer-times`, Prisma dan migrasi, layout web, tema, CI         | selesai |
 | 2    | `schedule`, `tasks`, `habits`, `goals`, seeder `habit_templates`, insight         | selesai |
 | 3    | `focus`, `dhikr`, seeder `dhikr_items`, timer dan counter di web                  | selesai |
-| 4    | Poles UI, data contoh, tangkapan layar, tag v0.1                                  |         |
+| 4    | Poles UI, data contoh, tangkapan layar, tag v0.1                                  | selesai |
 | 5    | `quran`, `memorization`, `journal` + AI Polish, `lecture-notes`, seeder Al-Qur'an |         |
 | 6    | Docker Compose penuh, dokumentasi, template issue/PR, PWA opsional, tag v1.0      |         |
 

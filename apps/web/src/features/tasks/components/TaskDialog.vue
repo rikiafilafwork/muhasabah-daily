@@ -80,7 +80,7 @@ async function onDelete() {
       <UiAlert v-if="formError" tone="error">{{ formError }}</UiAlert>
       <UiInput v-model="form.title" label="Judul" required :error="errors.title" />
       <UiTextarea v-model="form.notes" label="Catatan" :error="errors.notes" />
-      <div class="grid gap-4 sm:grid-cols-2">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <UiSelect
           v-model="form.projectId"
           label="Proyek"

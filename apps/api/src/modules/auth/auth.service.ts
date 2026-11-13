@@ -1,7 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma } from '@prisma/client';
-import * as argon2 from 'argon2';
 import {
   ErrorCode,
   type AuthResponse,
@@ -13,15 +12,8 @@ import { AppConfig } from '../../config/app-config.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { toProfile } from '../users/users.mapper';
 import { UsersService } from '../users/users.service';
+import { hashPassword, verifyPassword } from './password';
 import { RefreshTokenService } from './refresh-token.service';
-
-/** Parameter Argon2id (rekomendasi OWASP: m=19 MiB, t=2, p=1). */
-const ARGON2_OPTIONS = {
-  type: argon2.argon2id,
-  memoryCost: 19456,
-  timeCost: 2,
-  parallelism: 1,
-} satisfies argon2.HashOptions;
 
 export interface AuthResult {
   body: AuthResponse;
@@ -42,7 +34,7 @@ export class AuthService {
   ) {}
 
   async register(input: RegisterInput, userAgent?: string): Promise<AuthResult> {
-    const passwordHash = await argon2.hash(input.password, ARGON2_OPTIONS);
+    const passwordHash = await hashPassword(input.password);
     try {
       const user = await this.prisma.user.create({
         data: {
@@ -64,7 +56,7 @@ export class AuthService {
   async login(input: LoginInput, userAgent?: string): Promise<AuthResult> {
     const user = await this.prisma.user.findUnique({ where: { email: input.email } });
     const hash = user?.passwordHash ?? (await this.getDummyHash());
-    const valid = await argon2.verify(hash, input.password);
+    const valid = await verifyPassword(hash, input.password);
     if (!user || !valid) {
       throw new AppException(
         ErrorCode.INVALID_CREDENTIALS,
@@ -106,7 +98,7 @@ export class AuthService {
   }
 
   private getDummyHash(): Promise<string> {
-    this.dummyHash ??= argon2.hash('dummy-password-for-timing', ARGON2_OPTIONS);
+    this.dummyHash ??= hashPassword('dummy-password-for-timing');
     return this.dummyHash;
   }
 }

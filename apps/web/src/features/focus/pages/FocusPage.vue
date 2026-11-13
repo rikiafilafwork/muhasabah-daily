@@ -144,7 +144,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1.1fr_1fr]">
+  <div class="mx-auto grid grid-cols-1 max-w-5xl gap-6 lg:grid-cols-[1.1fr_1fr]">
     <header class="lg:col-span-2">
       <h1 class="text-2xl font-semibold">Fokus</h1>
       <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
@@ -258,7 +258,9 @@ onMounted(async () => {
             </span>
             <span class="shrink-0 tabular-nums">
               {{ Math.round(s.focusedSeconds / 60) }} mnt
-              <span v-if="s.status === 'cancelled'" class="text-xs text-stone-400"
+              <span
+                v-if="s.status === 'cancelled'"
+                class="text-xs text-stone-500 dark:text-stone-400"
                 >(dihentikan)</span
               >
             </span>

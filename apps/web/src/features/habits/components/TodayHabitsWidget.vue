@@ -42,9 +42,13 @@ const doneCount = computed(
             @change="habits.toggle(h, today)"
           />
           <span :class="['size-2 rounded-full', COLOR_CLASSES[h.color].dot]" aria-hidden="true" />
-          <span :class="['text-sm', habits.isDone(h, today) && 'text-stone-400 line-through']">{{
-            h.name
-          }}</span>
+          <span
+            :class="[
+              'text-sm',
+              habits.isDone(h, today) && 'text-stone-500 dark:text-stone-400 line-through',
+            ]"
+            >{{ h.name }}</span
+          >
         </label>
       </li>
     </ul>

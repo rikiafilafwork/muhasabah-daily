@@ -89,7 +89,7 @@ watch(
       <UiButton variant="secondary" @click="store.load(localToday)">Coba lagi</UiButton>
     </div>
 
-    <div v-else class="grid gap-6 md:grid-cols-[1fr_1.4fr] md:items-center">
+    <div v-else class="grid grid-cols-1 gap-6 md:grid-cols-[1fr_1.4fr] md:items-center">
       <div
         class="rounded-xl bg-gradient-to-br from-brand-700 to-brand-900 p-5 text-white"
         aria-live="polite"
@@ -128,7 +128,7 @@ watch(
             :key="key"
             :class="[
               'flex items-center justify-between px-2 py-2 text-sm',
-              key === 'sunrise' && 'text-stone-400 dark:text-stone-500',
+              key === 'sunrise' && 'text-stone-500 dark:text-stone-400',
               key === current &&
                 'rounded-lg bg-brand-50 font-semibold text-brand-800 dark:bg-brand-900/40 dark:text-brand-100',
             ]"
@@ -145,7 +145,7 @@ watch(
             class="h-8 animate-pulse rounded bg-stone-100 dark:bg-stone-800"
           />
         </div>
-        <p class="mt-2 text-xs text-stone-400">
+        <p class="mt-2 text-xs text-stone-500 dark:text-stone-400">
           Sumber: AlAdhan, metode {{ store.today?.method ?? 'Kemenag RI' }}.
         </p>
       </div>

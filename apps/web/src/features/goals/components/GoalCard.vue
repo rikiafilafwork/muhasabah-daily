@@ -42,7 +42,9 @@ const deadlineLabel = computed(() => {
 
     <p class="mt-4 text-2xl font-semibold tabular-nums">
       {{ goal.progress.total
-      }}<span class="text-base font-normal text-stone-500"> / {{ goal.target }} {{ unit }}</span>
+      }}<span class="text-base font-normal text-stone-500 dark:text-stone-400">
+        / {{ goal.target }} {{ unit }}</span
+      >
     </p>
     <div
       class="mt-2 flex h-2.5 overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800"

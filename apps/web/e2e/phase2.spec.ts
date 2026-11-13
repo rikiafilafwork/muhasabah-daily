@@ -11,9 +11,9 @@ test('habit: tambah dari library, centang hari ini, lihat insight dan rujukan', 
   await page.goto('/habits');
   await page.getByRole('button', { name: 'Tambah habit' }).click();
   const dialog = page.getByRole('dialog', { name: 'Tambah habit' });
-  await dialog.getByRole('button', { name: 'Tambah Sholat Dhuha' }).click();
+  await dialog.getByRole('button', { name: /^Tambah\s*:\s*Sholat Dhuha$/ }).click();
   await expect(
-    dialog.getByRole('button', { name: 'Sholat Dhuha sudah ditambahkan' }),
+    dialog.getByRole('button', { name: /^Sudah ada\s*:\s*Sholat Dhuha$/ }),
   ).toBeDisabled();
   await dialog.getByRole('button', { name: 'Tutup' }).click();
 
@@ -63,7 +63,7 @@ test('goal: tautkan habit dan progres menghitung centang', async ({ page }) => {
   await page.getByRole('button', { name: 'Tambah habit' }).click();
   const lib = page.getByRole('dialog', { name: 'Tambah habit' });
   await lib.getByRole('tab', { name: 'Ibadah' }).click();
-  await lib.getByRole('button', { name: 'Tambah Tilawah 1 juz' }).click();
+  await lib.getByRole('button', { name: /^Tambah\s*:\s*Tilawah 1 juz$/ }).click();
   await lib.getByRole('button', { name: 'Tutup' }).click();
   await page
     .getByTestId('habit-row')

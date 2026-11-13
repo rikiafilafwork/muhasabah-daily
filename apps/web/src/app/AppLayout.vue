@@ -101,7 +101,7 @@ async function logout() {
               <span class="flex-1">{{ item.label }}</span>
               <span
                 v-if="item.phase"
-                class="rounded bg-stone-100 px-1.5 py-0.5 text-[10px] font-medium text-stone-500 dark:bg-stone-800 dark:text-stone-400"
+                class="rounded bg-stone-100 px-1.5 py-0.5 text-[11px] font-medium text-stone-600 dark:bg-stone-800 dark:text-stone-300"
               >
                 segera
               </span>
@@ -124,7 +124,7 @@ async function logout() {
           </span>
           <span class="min-w-0 flex-1">
             <span class="block truncate text-sm font-medium">{{ session.user?.name }}</span>
-            <span class="block text-xs text-stone-500 dark:text-stone-400">Pengaturan</span>
+            <span class="block text-xs text-stone-600 dark:text-stone-400">Pengaturan</span>
           </span>
         </RouterLink>
         <button

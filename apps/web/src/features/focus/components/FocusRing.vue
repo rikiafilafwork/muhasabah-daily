@@ -48,7 +48,7 @@ const label = computed(() => {
       <span class="font-mono text-5xl font-semibold tabular-nums" data-testid="focus-remaining">{{
         label
       }}</span>
-      <span v-if="!running" class="mt-1 text-xs text-stone-400">{{
+      <span v-if="!running" class="mt-1 text-xs text-stone-500 dark:text-stone-400">{{
         progress > 0 ? 'dijeda' : 'siap'
       }}</span>
     </div>

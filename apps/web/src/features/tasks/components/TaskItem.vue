@@ -11,9 +11,9 @@ const overdue = computed(
 );
 const priorityClass = {
   none: '',
-  low: 'text-sky-600 dark:text-sky-400',
-  medium: 'text-amber-600 dark:text-amber-400',
-  high: 'text-rose-600 dark:text-rose-400',
+  low: 'text-sky-700 dark:text-sky-400',
+  medium: 'text-amber-700 dark:text-amber-400',
+  high: 'text-rose-700 dark:text-rose-400',
 } as const;
 </script>
 
@@ -36,7 +36,7 @@ const priorityClass = {
       <span
         :class="[
           'block text-sm',
-          task.completed && 'text-stone-400 line-through dark:text-stone-500',
+          task.completed && 'text-stone-500 line-through dark:text-stone-400',
         ]"
       >
         {{ task.title }}
@@ -46,7 +46,7 @@ const priorityClass = {
       >
         <span
           v-if="task.dueDate"
-          :class="overdue && 'font-medium text-rose-600 dark:text-rose-400'"
+          :class="overdue && 'font-medium text-rose-700 dark:text-rose-400'"
         >
           {{ relativeDateLabel(task.dueDate, today) }}
         </span>

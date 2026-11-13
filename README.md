@@ -2,7 +2,26 @@
 
 Aplikasi produktivitas Muslim open source yang dijalankan di komputermu sendiri. Jadwal, to-do, habit, goals, fokus, dzikir, hafalan, jurnal, dan catatan kajian disusun di sekitar waktu sholat.
 
-> Status: **fase 3** — autentikasi, profil, waktu sholat dengan hitung mundur, jadwal (hari/minggu/bulan, disisipi waktu sholat), to-do dengan proyek dan fokus hari ini, habit dengan library 46 template dan insight, serta goals yang tertaut ke habit, timer fokus yang tahan muat ulang dengan riwayat mingguan, serta dzikir pagi/petang/tidur dengan penghitung yang tetap berjalan saat offline. Modul lain menyusul sesuai [peta fase](ARCHITECTURE.md#16-pemetaan-ke-fase-pengerjaan).
+> **v0.1.0** — jadwal, to-do, habit, goals, fokus, dan dzikir sudah bisa dipakai. Hafalan (Hafidz), jurnal dengan AI Polish, dan catatan kajian menyusul di fase 5 ([peta fase](ARCHITECTURE.md#16-pemetaan-ke-fase-pengerjaan)).
+
+![Beranda: waktu sholat, fokus hari ini, habit, dzikir, dan agenda](docs/screenshots/beranda.png)
+
+## Fitur
+
+- **Waktu sholat** (AlAdhan, metode Kemenag RI) dengan hitung mundur ke sholat berikutnya; tetap tampil dari cache saat sumber tidak bisa dihubungi.
+- **Jadwal** hari/minggu/bulan. Tampilan hari menyisipkan waktu sholat di antara agenda.
+- **To-Do** dengan proyek, prioritas, tenggat, dan _fokus hari ini_ yang kedaluwarsa sendiri saat hari berganti.
+- **Habit** dari library 46 template (habit ibadah menyertakan rujukan), grid mingguan, dan insight: streak, konsistensi, proyeksi minggu depan.
+- **Goals** terukur yang progresnya berasal dari nilai manual dan centang habit tertaut.
+- **Fokus**: timer 25/5, 50/10, 15/3 yang tetap akurat saat tab berpindah atau halaman dimuat ulang, dengan pengingat bila waktu sholat masuk di tengah sesi.
+- **Dzikir** pagi, petang, dan sebelum tidur dengan teks Arab, latin, terjemah, rujukan, dan penghitung yang tetap berjalan saat offline.
+- Mode gelap, tampilan ponsel, dan audit aksesibilitas WCAG 2.1 AA otomatis di setiap halaman.
+
+| Jadwal hari                                                          | Habit dan insight                                         | Dzikir (gelap)                                                 |
+| -------------------------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------- |
+| ![Jadwal hari dengan waktu sholat](docs/screenshots/jadwal-hari.png) | ![Grid habit dan insight](docs/screenshots/habit.png)     | ![Dzikir pagi mode gelap](docs/screenshots/dzikir-gelap.png)   |
+| **To-Do**                                                            | **Goals**                                                 | **Fokus**                                                      |
+| ![To-Do fokus hari ini](docs/screenshots/todo.png)                   | ![Goals dengan habit tertaut](docs/screenshots/goals.png) | ![Timer fokus dan grafik mingguan](docs/screenshots/fokus.png) |
 
 ## Stack
 
@@ -25,6 +44,14 @@ pnpm dev                      # web http://localhost:5173, API http://localhost:
 
 Dokumentasi API (Swagger): http://localhost:3000/docs
 
+### Mencoba dengan data contoh
+
+```bash
+pnpm --filter api seed:demo   # akun demo@muhasabah.local / demo12345 dengan riwayat 4 minggu
+```
+
+Perintah ini membuat ulang akun demo setiap dijalankan dan ditolak saat `NODE_ENV=production`.
+
 Semua di container sekaligus:
 
 ```bash
@@ -41,6 +68,8 @@ docker compose --profile full up --build
 | `pnpm test`                                  | Test unit dan integrasi (butuh `db` dan `redis` berjalan)                           |
 | `pnpm test:e2e`                              | E2E Playwright (pertama kali: `pnpm --filter web exec playwright install chromium`) |
 | `pnpm build`                                 | Build produksi API dan web                                                          |
+| `pnpm --filter api seed:demo`                | Buat ulang akun demo beserta datanya                                                |
+| `pnpm --filter web screenshots`              | Perbarui `docs/screenshots/` (butuh `pnpm dev` dan `seed:demo`)                     |
 | `pnpm --filter api db:migrate --name <nama>` | Buat migrasi baru                                                                   |
 
 ## Struktur

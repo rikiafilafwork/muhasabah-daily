@@ -8,7 +8,7 @@ test('dzikir: hitung, tuntas, dan tersimpan setelah muat ulang', async ({ page }
   const kursi = page.getByTestId('dhikr-card').filter({ hasText: 'Ayat Kursi' });
   await expect(kursi).toContainText('Rujukan:');
   await kursi.getByRole('button', { name: /Hitung Ayat Kursi/ }).click();
-  await expect(kursi.getByRole('button', { name: /Ayat Kursi tuntas/ })).toBeDisabled();
+  await expect(kursi.getByRole('button', { name: /Ayat Kursi\s*:\s*Tuntas/ })).toBeDisabled();
 
   const ikhlas = page.getByTestId('dhikr-card').filter({ hasText: 'Surah Al-Ikhlas' });
   const btn = ikhlas.getByRole('button', { name: /Hitung Surah Al-Ikhlas/ });

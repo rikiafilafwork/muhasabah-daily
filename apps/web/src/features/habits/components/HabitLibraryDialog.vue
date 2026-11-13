@@ -112,13 +112,15 @@ watch(open, (v) => {
             variant="secondary"
             :disabled="used.has(t.id)"
             :loading="adding === t.id"
-            :aria-label="used.has(t.id) ? `${t.name} sudah ditambahkan` : `Tambah ${t.name}`"
             @click="addTemplate(t)"
           >
-            {{ used.has(t.id) ? 'Sudah ada' : 'Tambah' }}
+            {{ used.has(t.id) ? 'Sudah ada' : 'Tambah' }}<span class="sr-only">: {{ t.name }}</span>
           </UiButton>
         </li>
-        <li v-if="!visible.length" class="py-4 text-center text-sm text-stone-500">
+        <li
+          v-if="!visible.length"
+          class="py-4 text-center text-sm text-stone-500 dark:text-stone-400"
+        >
           Tidak ditemukan.
         </li>
       </ul>

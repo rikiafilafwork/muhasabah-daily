@@ -55,23 +55,20 @@ const pct = computed(() => Math.min(100, (props.item.count / props.item.repeat) 
           'relative flex h-14 flex-1 items-center justify-center overflow-hidden rounded-xl text-base font-semibold transition-colors select-none',
           done
             ? 'bg-brand-50 text-brand-800 dark:bg-brand-900/40 dark:text-brand-100'
-            : 'bg-brand-700 text-white hover:bg-brand-800 active:bg-brand-900 dark:bg-brand-600',
+            : 'bg-brand-700 text-white hover:bg-brand-800 active:bg-brand-900',
         ]"
-        :aria-label="
-          done
-            ? `${item.title} tuntas, ${item.count} kali`
-            : `Hitung ${item.title}, ${item.count} dari ${item.repeat}`
-        "
         :disabled="done"
         @click="emit('increment')"
       >
         <span
           v-if="!done"
-          class="absolute inset-y-0 left-0 bg-white/15"
+          class="absolute inset-y-0 left-0 bg-brand-950/30"
           :style="{ width: `${pct}%` }"
           aria-hidden="true"
         />
-        <span class="relative tabular-nums" aria-live="polite">
+        <!-- Nama aksesibel memuat teks yang terlihat (WCAG 2.5.3). -->
+        <span class="relative tabular-nums">
+          <span class="sr-only">{{ done ? `${item.title}:` : `Hitung ${item.title}:` }}</span>
           <template v-if="done">Tuntas ✓ {{ item.count }}/{{ item.repeat }}</template>
           <template v-else>{{ item.count }} / {{ item.repeat }}</template>
         </span>
@@ -79,21 +76,19 @@ const pct = computed(() => Math.min(100, (props.item.count / props.item.repeat) 
       <div class="flex flex-col gap-1">
         <button
           type="button"
-          class="rounded-lg px-2 py-1 text-xs text-stone-500 hover:bg-stone-100 disabled:opacity-40 dark:hover:bg-stone-800"
+          class="rounded-lg px-2 py-1 text-xs text-stone-500 dark:text-stone-400 hover:bg-stone-100 disabled:opacity-40 dark:hover:bg-stone-800"
           :disabled="item.count === 0"
-          :aria-label="`Kurangi satu hitungan ${item.title}`"
           @click="emit('decrement')"
         >
-          −1
+          −1<span class="sr-only"> hitungan {{ item.title }}</span>
         </button>
         <button
           type="button"
-          class="rounded-lg px-2 py-1 text-xs text-stone-500 hover:bg-stone-100 disabled:opacity-40 dark:hover:bg-stone-800"
+          class="rounded-lg px-2 py-1 text-xs text-stone-500 dark:text-stone-400 hover:bg-stone-100 disabled:opacity-40 dark:hover:bg-stone-800"
           :disabled="item.count === 0"
-          :aria-label="`Ulang hitungan ${item.title}`"
           @click="emit('reset')"
         >
-          Ulang
+          Ulang<span class="sr-only"> hitungan {{ item.title }}</span>
         </button>
       </div>
     </div>

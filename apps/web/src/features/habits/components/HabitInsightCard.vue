@@ -124,7 +124,8 @@ const stats = (d: HabitInsights) => [
               </div>
             </td>
             <td class="hidden py-2 text-right tabular-nums sm:table-cell">
-              {{ h.currentStreak }} <span class="text-stone-400">/ {{ h.bestStreak }}</span>
+              {{ h.currentStreak }}
+              <span class="text-stone-500 dark:text-stone-400">/ {{ h.bestStreak }}</span>
             </td>
             <td class="py-2 text-right tabular-nums">{{ h.checkIns }}/{{ h.activeDays }}</td>
           </tr>

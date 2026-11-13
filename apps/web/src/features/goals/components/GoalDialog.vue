@@ -94,7 +94,7 @@ async function onDelete() {
         :rows="2"
         :error="errors.description"
       />
-      <div class="grid gap-4 sm:grid-cols-3">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <UiInput
           v-model="form.target"
           label="Target"
@@ -135,7 +135,9 @@ async function onDelete() {
         <p class="mb-2 text-xs text-stone-500 dark:text-stone-400">
           Setiap centang habit sejak tanggal mulai menambah progres sebesar bobotnya.
         </p>
-        <p v-if="!habits.length" class="text-sm text-stone-500">Belum ada habit untuk ditautkan.</p>
+        <p v-if="!habits.length" class="text-sm text-stone-500 dark:text-stone-400">
+          Belum ada habit untuk ditautkan.
+        </p>
         <ul class="max-h-56 space-y-1 overflow-y-auto">
           <li v-for="h in habits" :key="h.id" class="flex items-center gap-3">
             <label class="flex flex-1 items-center gap-2 text-sm">
@@ -147,7 +149,10 @@ async function onDelete() {
               />
               {{ h.name }}
             </label>
-            <label v-if="links.has(h.id)" class="flex items-center gap-1 text-xs text-stone-500">
+            <label
+              v-if="links.has(h.id)"
+              class="flex items-center gap-1 text-xs text-stone-500 dark:text-stone-400"
+            >
               Bobot
               <input
                 :value="links.get(h.id)"

@@ -64,7 +64,7 @@ function open(goal: Goal | null) {
 
     <UiAlert v-if="error" tone="error">{{ error }}</UiAlert>
 
-    <div v-if="goals.length" class="grid gap-4 md:grid-cols-2">
+    <div v-if="goals.length" class="grid grid-cols-1 gap-4 md:grid-cols-2">
       <GoalCard
         v-for="g in goals"
         :key="g.id"

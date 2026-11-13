@@ -100,7 +100,7 @@ const navClass = (active: boolean) => [
 </script>
 
 <template>
-  <div class="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[14rem_1fr]">
+  <div class="mx-auto grid grid-cols-1 max-w-6xl gap-6 lg:grid-cols-[14rem_1fr]">
     <aside aria-label="Daftar tugas" class="min-w-0">
       <h1 class="mb-4 text-2xl font-semibold lg:sr-only">To-Do</h1>
       <nav class="flex gap-1 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
@@ -125,7 +125,7 @@ const navClass = (active: boolean) => [
           </h2>
           <button
             type="button"
-            class="rounded p-1 text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800"
+            class="rounded p-1 text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800"
             @click="openProject(null)"
           >
             <span class="sr-only">Proyek baru</span>
@@ -154,10 +154,12 @@ const navClass = (active: boolean) => [
                 aria-hidden="true"
               />
               <span class="flex-1 truncate">{{ p.name }}</span>
-              <span class="text-xs text-stone-400">{{ p.openTaskCount || '' }}</span>
+              <span class="text-xs text-stone-500 dark:text-stone-400">{{
+                p.openTaskCount || ''
+              }}</span>
             </button>
           </li>
-          <li v-if="!projects.length" class="px-3 py-1 text-xs text-stone-400">
+          <li v-if="!projects.length" class="px-3 py-1 text-xs text-stone-500 dark:text-stone-400">
             Belum ada proyek.
           </li>
         </ul>
@@ -189,7 +191,7 @@ const navClass = (active: boolean) => [
           <button
             v-if="currentProject"
             type="button"
-            class="rounded px-2 py-1 text-xs text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800"
+            class="rounded px-2 py-1 text-xs text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800"
             @click="openProject(currentProject)"
           >
             Ubah

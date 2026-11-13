@@ -35,8 +35,9 @@ export default tseslint.config(
     },
   },
   {
-    files: ['apps/web/**/*.{ts,vue}'],
-    languageOptions: { globals: { ...globals.browser } },
+    files: ['apps/web/**/*.{ts,vue,mjs}'],
+    // Skrip Playwright juga menjalankan kode di browser lewat page.evaluate.
+    languageOptions: { globals: { ...globals.browser, __APP_VERSION__: 'readonly' } },
     rules: {
       // Batas modul: fitur hanya boleh diimpor lewat index.ts-nya (ARCHITECTURE.md 5.2).
       'no-restricted-imports': [

@@ -1,6 +1,6 @@
 {
   "name": "api",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "build": "nest build",
@@ -14,7 +14,8 @@
     "db:migrate": "dotenv run -q -f ../../.env -- prisma migrate dev",
     "seed": "dotenv run -q -f ../../.env -- ts-node --transpile-only prisma/seed/index.ts",
     "db:deploy": "dotenv run -q -f ../../.env -- prisma migrate deploy",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "seed:demo": "dotenv run -q -f ../../.env -- ts-node --transpile-only prisma/seed/demo-cli.ts"
   },
   "dependencies": {
     "@muhasabah/shared": "workspace:*",

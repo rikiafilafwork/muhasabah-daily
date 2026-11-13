@@ -11,7 +11,7 @@ withDefaults(
 );
 
 const variants = {
-  primary: 'bg-brand-700 text-white hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700',
+  primary: 'bg-brand-700 text-white hover:bg-brand-800',
   secondary:
     'border border-stone-300 bg-white text-stone-800 hover:bg-stone-100 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 dark:hover:bg-stone-800',
   ghost: 'text-stone-700 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800',

@@ -217,7 +217,7 @@ function openEvent(event: CalendarEvent | null, date?: string) {
     </UiCard>
 
     <!-- Minggu -->
-    <div v-else-if="view === 'week'" class="grid gap-2 md:grid-cols-7">
+    <div v-else-if="view === 'week'" class="grid grid-cols-1 gap-2 md:grid-cols-7">
       <section
         v-for="d in dates"
         :key="d"
@@ -253,7 +253,7 @@ function openEvent(event: CalendarEvent | null, date?: string) {
           />
           <button
             type="button"
-            class="w-full rounded py-1 text-xs text-stone-400 hover:bg-stone-50 hover:text-stone-600 dark:hover:bg-stone-800"
+            class="w-full rounded py-1 text-xs text-stone-500 dark:text-stone-400 hover:bg-stone-50 hover:text-stone-600 dark:hover:bg-stone-800"
             :aria-label="`Tambah agenda ${formatLongDate(d)}`"
             @click="openEvent(null, d)"
           >
@@ -290,7 +290,7 @@ function openEvent(event: CalendarEvent | null, date?: string) {
                 ? 'bg-brand-700 font-semibold text-white'
                 : inMonth(d)
                   ? ''
-                  : 'text-stone-400',
+                  : 'text-stone-500 dark:text-stone-400',
             ]"
             :aria-label="formatLongDate(d)"
             @click="navigate({ view: 'day', date: d })"
@@ -308,7 +308,7 @@ function openEvent(event: CalendarEvent | null, date?: string) {
             <button
               v-if="(byDate.get(d)?.length ?? 0) > 3"
               type="button"
-              class="px-1 text-xs text-stone-500 hover:underline"
+              class="px-1 text-xs text-stone-500 dark:text-stone-400 hover:underline"
               @click="navigate({ view: 'day', date: d })"
             >
               +{{ byDate.get(d)!.length - 3 }} lagi

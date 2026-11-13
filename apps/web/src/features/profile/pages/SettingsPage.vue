@@ -17,6 +17,7 @@ import {
 import { profileApi } from '../api';
 
 const session = useSessionStore();
+const version = __APP_VERSION__;
 const route = useRoute();
 const router = useRouter();
 const { setTheme } = useTheme();
@@ -173,7 +174,7 @@ async function deleteAccount() {
           <UiAlert v-if="geoError" tone="warning">{{ geoError }}</UiAlert>
 
           <UiInput v-model="form.city" label="Nama kota (opsional)" :error="errors.city" />
-          <div class="grid gap-4 sm:grid-cols-2">
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <UiInput
               v-model="form.latitude"
               label="Lintang (latitude)"
@@ -248,5 +249,13 @@ async function deleteAccount() {
         </UiButton>
       </form>
     </UiCard>
+
+    <footer class="space-y-1 pb-4 text-center text-xs text-stone-500 dark:text-stone-400">
+      <p>Muhasabah Daily v{{ version }} · open source (MIT), berjalan di server lokalmu sendiri.</p>
+      <p>
+        Waktu sholat: AlAdhan (metode Kemenag RI). Ayat: AlQuran Cloud. Rujukan dzikir dan habit
+        ditampilkan bersama kontennya.
+      </p>
+    </footer>
   </div>
 </template>
