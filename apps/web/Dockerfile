@@ -8,7 +8,7 @@ RUN pnpm install --frozen-lockfile --filter "web..." \
   && pnpm --filter @muhasabah/shared build \
   && pnpm --filter web exec vite build
 
-FROM nginx:1.27-alpine
+FROM nginx:1.29-alpine
 COPY apps/web/docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /repo/apps/web/dist /usr/share/nginx/html
 EXPOSE 80
