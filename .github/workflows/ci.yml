@@ -67,10 +67,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: pnpm/action-setup@v4
+      # Tanpa cache: job ini tidak menjalankan `pnpm install`, jadi folder store tidak ada.
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: pnpm
       - name: Audit dependensi produksi
         run: pnpm audit --prod --audit-level high
         continue-on-error: true

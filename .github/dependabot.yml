@@ -16,3 +16,7 @@ updates:
     directories: [/apps/api, /apps/web]
     schedule:
       interval: monthly
+    ignore:
+      # Tetap di Node LTS; naik versi mayor dilakukan manual saat LTS berikutnya rilis.
+      - dependency-name: node
+        update-types: [version-update:semver-major]
