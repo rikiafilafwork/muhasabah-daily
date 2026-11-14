@@ -1,5 +1,5 @@
 # Image API. Dibangun dari root repo: docker build -f apps/api/Dockerfile .
-FROM node:24-alpine AS base
+FROM node:25-alpine AS base
 RUN npm install -g pnpm@11.21.0
 WORKDIR /repo
 
@@ -16,7 +16,7 @@ RUN pnpm --filter @muhasabah/shared build \
   && mkdir -p node_modules/@muhasabah/shared \
   && cp -r /repo/packages/shared/dist /repo/packages/shared/package.json node_modules/@muhasabah/shared/
 
-FROM node:24-alpine AS runtime
+FROM node:25-alpine AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=build /out ./
