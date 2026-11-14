@@ -14,6 +14,10 @@ const PAGES = [
   '/goals',
   '/focus',
   '/dhikr?group=pagi',
+  '/memorization',
+  '/journal',
+  '/lecture-notes',
+  '/lecture-notes/new',
   '/settings',
 ];
 

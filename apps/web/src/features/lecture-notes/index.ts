@@ -1,0 +1,1 @@
+export { lectureNotesRoutes } from './routes';

@@ -2,6 +2,21 @@
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/id-ID/1.1.0/) dan versi mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 
+## [Belum dirilis]
+
+### Ditambahkan
+
+- **Al-Qur'an:** impor 114 surah dan 6.236 ayat dari AlQuran Cloud (teks Utsmani, terjemah Kemenag, transliterasi) lewat antrean BullMQ `seed` (`seed:quran`, atau `--direct`), dengan URL audio murottal; endpoint surah dan ayat.
+- **Hafidz:** rencana hafalan dengan tahapan tikrar otomatis yang bisa disesuaikan, pemutar audio per ayat (state machine) dengan penanganan audio gagal, dan progres per tahap.
+- **Jurnal:** jurnal harian dengan simpan otomatis dan riwayat 30 hari; **AI Polish** opsional lewat antrean `ai` dengan penyedia Anthropic (Claude), batas harian per pengguna, penanganan penolakan model, dan teks asli yang tidak pernah ditimpa.
+- **Catatan Kajian:** editor TipTap dengan rujukan ayat (teks Arab dan terjemah), tag, pencarian, dan paginasi.
+- Data contoh, audit aksesibilitas, cek tata letak ponsel, dan tangkapan layar mencakup modul baru.
+
+### Diubah
+
+- Batas body JSON API naik dari 100 kB ke 300 kB untuk dokumen catatan kajian.
+- Error domain 5xx (mis. `AI_DISABLED`, `PRAYER_TIMES_UNAVAILABLE`) tidak lagi dicatat sebagai galat dengan stack trace.
+
 ## [0.1.0] — 2026-11-13
 
 Rilis pertama: fase 0–4 dari [peta fase](ARCHITECTURE.md#16-pemetaan-ke-fase-pengerjaan).

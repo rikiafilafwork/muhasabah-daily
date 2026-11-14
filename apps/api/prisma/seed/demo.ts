@@ -7,7 +7,14 @@
  * layar konsisten. Butuh `seed` dasar (template habit dan dzikir) lebih dulu.
  */
 import type { PrismaClient } from '@prisma/client';
-import { addDays, toLocalDate, zonedTimeToUtc } from '@muhasabah/shared';
+import {
+  addDays,
+  buildTikrarStages,
+  extractRichDoc,
+  formatAyahRef,
+  toLocalDate,
+  zonedTimeToUtc,
+} from '@muhasabah/shared';
 import { hashPassword } from '../../src/modules/auth/password';
 
 export const DEMO_EMAIL = 'demo@muhasabah.local';
@@ -267,6 +274,104 @@ export async function seedDemo(prisma: PrismaClient, now: Date = new Date()): Pr
     }
   }
   await prisma.dhikrLog.createMany({ data: dhikrLogs });
+
+  // ---------------------------------------------------------------- Hafidz
+  // Al-Mulk 1–5 bila data Al-Qur'an lengkap sudah diimpor; bila hanya data uji, Al-Ikhlas.
+  const mulk = await prisma.surah.findUnique({ where: { id: 67 } });
+  const ikhlas = await prisma.surah.findUnique({ where: { id: 112 } });
+  const planSurah = mulk ?? ikhlas;
+  if (planSurah) {
+    const toAyah = mulk ? 5 : Math.min(4, planSurah.ayahCount);
+    const settings = { listenRepeat: 5, reciteRepeat: 3, connectRepeat: 3 };
+    const stages = buildTikrarStages(1, toAyah, settings);
+    await prisma.memorizationPlan.create({
+      data: {
+        userId,
+        surahId: planSurah.id,
+        fromAyah: 1,
+        toAyah,
+        title: `Hafalan ${planSurah.nameLatin}`,
+        ...settings,
+        currentStage: Math.floor(stages.length * 0.4),
+        createdAt: at(-6, '05:00'),
+        stages: { create: stages.map((st, position) => ({ ...st, position })) },
+      },
+    });
+  }
+
+  // ---------------------------------------------------------------- Jurnal
+  const journal = [
+    [
+      -2,
+      'Alhamdulillah hari ini bisa sholat subuh berjamaah lagi. Masih sering menunda tilawah sampai malam, besok coba setelah subuh.',
+    ],
+    [
+      -1,
+      'Bimbingan skripsi lancar. Kurang sabar waktu macet di jalan, perlu lebih banyak istighfar. Syukur: sehat, keluarga baik, ada rezeki makan siang bersama teman.',
+    ],
+    [0, 'Pagi ini dzikir pagi tuntas. Target sore: revisi bab 3 dan olahraga 30 menit.'],
+  ] as const;
+  for (const [n, rawText] of journal) {
+    await prisma.journalEntry.create({ data: { userId, date: d(day(n)), rawText } });
+  }
+
+  // ---------------------------------------------------------------- Catatan kajian
+  const ref = (surahId: number, from: number, to: number, name: string) => ({
+    type: 'ayahRef',
+    attrs: { surahId, from, to, label: formatAyahRef(name, from, to) },
+  });
+  const para = (text: string) => ({ type: 'paragraph', content: [{ type: 'text', text }] });
+  const notes = [
+    {
+      title: 'Tafsir Surah Al-Mulk: ujian dan amal terbaik',
+      speaker: 'Ustadz Abdullah',
+      source: 'Masjid Raya, kajian Ahad pagi',
+      date: day(-3),
+      tags: ['tafsir', 'al-mulk'],
+      content: [
+        { type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: 'Poin utama' }] },
+        para(
+          'Hidup dan mati diciptakan untuk menguji siapa yang paling baik amalnya, bukan yang paling banyak.',
+        ),
+        ...(mulk ? [ref(67, 1, 2, mulk.nameLatin)] : []),
+        {
+          type: 'bulletList',
+          content: [
+            { type: 'listItem', content: [para('Kualitas amal: ikhlas dan sesuai tuntunan.')] },
+            { type: 'listItem', content: [para('Tadabbur ciptaan Allah menguatkan iman.')] },
+          ],
+        },
+      ],
+    },
+    {
+      title: 'Makna tauhid dalam Surah Al-Ikhlas',
+      speaker: 'Ustadzah Aisyah',
+      source: null,
+      date: day(-10),
+      tags: ['aqidah'],
+      content: [
+        para('Al-Ikhlas menegaskan keesaan Allah dan menafikan segala bentuk penyerupaan.'),
+        ...(ikhlas ? [ref(112, 1, 4, ikhlas.nameLatin)] : []),
+      ],
+    },
+  ];
+  for (const n of notes) {
+    const doc = { type: 'doc' as const, content: n.content };
+    const { text, ayahRefs } = extractRichDoc(doc);
+    await prisma.lectureNote.create({
+      data: {
+        userId,
+        title: n.title,
+        speaker: n.speaker,
+        source: n.source,
+        date: d(n.date),
+        tags: n.tags,
+        content: doc,
+        contentText: text,
+        ayahRefs: ayahRefs as unknown as object[],
+      },
+    });
+  }
 
   return { userId, email: DEMO_EMAIL, password: DEMO_PASSWORD };
 }

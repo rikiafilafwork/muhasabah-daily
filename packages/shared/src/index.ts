@@ -10,3 +10,7 @@ export * from './habits';
 export * from './goals';
 export * from './focus';
 export * from './dhikr';
+export * from './quran';
+export * from './memorization';
+export * from './journal';
+export * from './lecture-notes';

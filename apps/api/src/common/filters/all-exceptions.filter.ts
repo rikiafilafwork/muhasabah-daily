@@ -29,7 +29,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost): void {
     const res = host.switchToHttp().getResponse<Response>();
     const body = this.toBody(exception);
-    if (body.statusCode >= 500) {
+    // Error domain (AppException) adalah respons yang disengaja; hanya galat tak terduga yang dicatat lengkap.
+    if (body.statusCode >= 500 && !(exception instanceof AppException)) {
       this.logger.error(exception instanceof Error ? exception.stack : String(exception));
     }
     res.status(body.statusCode).json(body);

@@ -15,6 +15,10 @@ const PAGES = [
   ['goals', '/goals'],
   ['fokus', '/focus'],
   ['dzikir', '/dhikr?group=pagi'],
+  ['hafidz', '/memorization'],
+  ['jurnal', '/journal'],
+  ['kajian', '/lecture-notes'],
+  ['kajian baru', '/lecture-notes/new'],
   ['pengaturan', '/settings'],
 ] as const;
 
@@ -82,6 +86,7 @@ for (const scheme of ['light', 'dark'] as const) {
       ['/habits', 'Tambah habit'],
       ['/goals', 'Goal baru'],
       ['/schedule?view=week', 'Agenda baru'],
+      ['/memorization', 'Rencana baru'],
     ] as const;
     for (const [url, button] of DIALOGS) {
       await test.step(`dialog ${button}`, async () => {

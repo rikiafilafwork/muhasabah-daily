@@ -11,7 +11,12 @@ import { AppConfig } from './config/app-config.service';
 import { AppConfigModule } from './config/config.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
+import { MemorizationModule } from './modules/memorization/memorization.module';
+import { AiModule } from './modules/ai/ai.module';
+import { JournalModule } from './modules/journal/journal.module';
+import { LectureNotesModule } from './modules/lecture-notes/lecture-notes.module';
 import { PrayerTimesModule } from './modules/prayer-times/prayer-times.module';
+import { QuranModule } from './modules/quran/quran.module';
 import { DhikrModule } from './modules/dhikr/dhikr.module';
 import { EventsModule } from './modules/events/events.module';
 import { FocusModule } from './modules/focus/focus.module';
@@ -76,6 +81,11 @@ const REQUEST_ID_PATTERN = /^[\w-]{1,64}$/;
     GoalsModule,
     FocusModule,
     DhikrModule,
+    QuranModule,
+    MemorizationModule,
+    AiModule,
+    JournalModule,
+    LectureNotesModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },

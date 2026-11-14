@@ -45,14 +45,17 @@ model User {
   createdAt    DateTime @default(now()) @db.Timestamptz(3)
   updatedAt    DateTime @updatedAt @db.Timestamptz(3)
 
-  refreshTokens RefreshToken[]
-  events        Event[]
-  projects      Project[]
-  tasks         Task[]
-  habits        Habit[]
-  goals         Goal[]
-  focusSessions FocusSession[]
-  dhikrLogs     DhikrLog[]
+  refreshTokens     RefreshToken[]
+  events            Event[]
+  projects          Project[]
+  tasks             Task[]
+  habits            Habit[]
+  goals             Goal[]
+  focusSessions     FocusSession[]
+  dhikrLogs         DhikrLog[]
+  memorizationPlans MemorizationPlan[]
+  journalEntries    JournalEntry[]
+  lectureNotes      LectureNote[]
 
   @@map("users")
 }
@@ -292,4 +295,136 @@ model DhikrLog {
   @@unique([userId, dhikrId, date])
   @@index([userId, date])
   @@map("dhikr_logs")
+}
+
+// ---------------------------------------------------------------- Fase 5
+
+/// Data Al-Qur'an, diisi oleh `seed:quran` dari AlQuran Cloud. Baca-saja.
+model Surah {
+  id             Int    @id
+  nameArabic     String
+  nameLatin      String
+  nameMeaning    String
+  revelationType String
+  ayahCount      Int
+
+  ayahs             Ayah[]
+  memorizationPlans MemorizationPlan[]
+
+  @@map("surahs")
+}
+
+model Ayah {
+  /// Nomor global 1–6236.
+  id            Int    @id
+  surahId       Int
+  numberInSurah Int
+  juz           Int
+  page          Int
+  arabic        String
+  latin         String
+  translationId String
+  /// URL audio di sumbernya; file audio tidak disimpan.
+  audioUrl      String
+
+  surah Surah @relation(fields: [surahId], references: [id], onDelete: Cascade)
+
+  @@unique([surahId, numberInSurah])
+  @@map("ayahs")
+}
+
+model MemorizationPlan {
+  id            String   @id @default(cuid())
+  userId        String
+  surahId       Int
+  fromAyah      Int
+  toAyah        Int
+  title         String?
+  listenRepeat  Int
+  reciteRepeat  Int
+  connectRepeat Int
+  currentStage  Int      @default(0)
+  archived      Boolean  @default(false)
+  createdAt     DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime @updatedAt @db.Timestamptz(3)
+
+  user   User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  surah  Surah               @relation(fields: [surahId], references: [id], onDelete: Restrict)
+  stages MemorizationStage[]
+
+  @@index([userId, archived, createdAt])
+  @@map("memorization_plans")
+}
+
+enum StageKind {
+  listen
+  recite
+  connect
+}
+
+model MemorizationStage {
+  id       String    @id @default(cuid())
+  planId   String
+  position Int
+  kind     StageKind
+  fromAyah Int
+  toAyah   Int
+  repeat   Int
+
+  plan MemorizationPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, position])
+  @@map("memorization_stages")
+}
+
+enum PolishStatus {
+  none
+  pending
+  done
+  failed
+}
+
+model JournalEntry {
+  id              String       @id @default(cuid())
+  userId          String
+  /// Tanggal lokal pengguna.
+  date            DateTime     @db.Date
+  rawText         String
+  polishedText    String?
+  polishStatus    PolishStatus @default(none)
+  polishError     String?
+  /// Hash teks asli yang dirapikan; berbeda dari hash sekarang berarti versi rapi sudah usang.
+  polishedRawHash String?
+  polishedAt      DateTime?    @db.Timestamptz(3)
+  createdAt       DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime     @updatedAt @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("journal_entries")
+}
+
+model LectureNote {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  speaker     String?
+  source      String?
+  /// Tanggal lokal kajian.
+  date        DateTime @db.Date
+  tags        String[]
+  /// Dokumen TipTap (JSON). Dirender oleh editor, tidak pernah sebagai HTML mentah.
+  content     Json
+  /// Teks polos untuk pencarian dan pratinjau.
+  contentText String
+  /// Rujukan ayat yang ditemukan di dokumen: [{ surahId, from, to }].
+  ayahRefs    Json     @default("[]")
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+  @@map("lecture_notes")
 }

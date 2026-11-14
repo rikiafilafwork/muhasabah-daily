@@ -10,6 +10,8 @@ import { setupApp } from '../src/setup-app';
 import { AladhanClient } from '../src/modules/prayer-times/aladhan.client';
 import { ThrottlerStorage } from '@nestjs/throttler';
 import { seedDhikr } from '../prisma/seed/dhikr';
+import { seedQuranFixture } from '../prisma/seed/quran-fixture';
+import { AI_PROVIDER, type AiProvider } from '../src/modules/ai/ai-provider';
 import { seedHabitTemplates } from '../prisma/seed/habit-templates';
 
 export const P = '/api/v1';
@@ -52,12 +54,31 @@ export interface TestContext {
   aladhan: FakeAladhan;
 }
 
-export async function createTestApp(opts: { throttle?: boolean } = {}): Promise<TestContext> {
+/** Penyedia AI tiruan: merapikan dengan aturan sederhana dan bisa diatur untuk menolak. */
+export class FakeAi implements AiProvider {
+  readonly name = 'fake';
+  calls: string[] = [];
+  mode: 'ok' | 'refuse' = 'ok';
+  async polish(text: string) {
+    this.calls.push(text);
+    if (this.mode === 'refuse') return { ok: false as const, code: 'AI_REFUSED' as const };
+    const fixed = text.trim().replace(/\bsy\b/g, 'saya');
+    return {
+      ok: true as const,
+      text: fixed.charAt(0).toUpperCase() + fixed.slice(1) + (fixed.endsWith('.') ? '' : '.'),
+    };
+  }
+}
+
+export async function createTestApp(
+  opts: { throttle?: boolean; ai?: AiProvider | null } = {},
+): Promise<TestContext> {
   const aladhan = new FakeAladhan();
   let builder = Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(AladhanClient)
     .useValue(aladhan);
   if (!opts.throttle) builder = builder.overrideProvider(ThrottlerStorage).useValue(noThrottle);
+  if ('ai' in opts) builder = builder.overrideProvider(AI_PROVIDER).useValue(opts.ai ?? null);
   const moduleRef = await builder.compile();
 
   const app = moduleRef.createNestApplication<INestApplication<App>>({ bodyParser: false });
@@ -65,6 +86,7 @@ export async function createTestApp(opts: { throttle?: boolean } = {}): Promise<
   await app.init();
   await seedHabitTemplates(app.get(PrismaService));
   await seedDhikr(app.get(PrismaService), { online: false });
+  await seedQuranFixture(app.get(PrismaService));
   return { app, prisma: app.get(PrismaService), redis: app.get(REDIS), aladhan };
 }
 
@@ -119,4 +141,19 @@ export function as(app: INestApplication<App>, token: string) {
 export function todayJakarta(offsetDays = 0): string {
   const d = new Date(Date.now() + offsetDays * 86_400_000);
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(d);
+}
+
+/** Menunggu kondisi terpenuhi (untuk pekerjaan antrean di latar). */
+export async function waitFor<T>(
+  fn: () => Promise<T>,
+  ok: (v: T) => boolean,
+  timeoutMs = 8000,
+): Promise<T> {
+  const start = Date.now();
+  for (;;) {
+    const v = await fn();
+    if (ok(v)) return v;
+    if (Date.now() - start > timeoutMs) throw new Error('waitFor: waktu habis');
+    await new Promise((r) => setTimeout(r, 100));
+  }
 }

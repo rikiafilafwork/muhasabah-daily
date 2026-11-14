@@ -13,7 +13,8 @@ export function setupApp(app: INestApplication): void {
 
   app.setGlobalPrefix(API_PREFIX);
   express.set('trust proxy', 'loopback');
-  express.useBodyParser('json', { limit: '100kb' });
+  // Cukup untuk dokumen catatan kajian (maks. 200 kB JSON, lihat LECTURE_NOTE_MAX_BYTES).
+  express.useBodyParser('json', { limit: '300kb' });
   app.use(helmet());
   app.use(cookieParser());
   app.enableCors({

@@ -30,13 +30,11 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'Hafidz',
     to: '/memorization',
     icon: 'M4 5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2zM8 7h6',
-    phase: 5,
   },
-  { label: 'Jurnal', to: '/journal', icon: 'M4 4h12l4 4v12H4zM8 12h8M8 16h5', phase: 5 },
+  { label: 'Jurnal', to: '/journal', icon: 'M4 4h12l4 4v12H4zM8 12h8M8 16h5' },
   {
     label: 'Kajian',
     to: '/lecture-notes',
     icon: 'M3 6l9-3 9 3-9 3zM6 8v6c0 2 3 4 6 4s6-2 6-4V8',
-    phase: 5,
   },
 ];

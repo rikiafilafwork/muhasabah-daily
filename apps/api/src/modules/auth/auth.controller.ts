@@ -9,8 +9,12 @@ import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto/auth.dto';
 import { clearRefreshCookie, readRefreshCookie, setRefreshCookie } from './refresh-cookie';
 
-/** Batas lebih ketat untuk endpoint autentikasi: 10 permintaan per menit per IP. */
-const AUTH_THROTTLE = { default: { limit: 10, ttl: 60_000 } };
+/**
+ * Batas lebih ketat untuk endpoint autentikasi: `AUTH_RATE_LIMIT` permintaan per menit per IP
+ * (bawaan 10); `/auth/refresh` tiga kali lipatnya. Nilai sudah divalidasi saat start (config/env.ts).
+ */
+const authLimit = () => Number(process.env.AUTH_RATE_LIMIT ?? 10);
+const AUTH_THROTTLE = { default: { limit: authLimit, ttl: 60_000 } };
 
 @ApiTags('Auth')
 @Public()
@@ -45,7 +49,7 @@ export class AuthController {
   /** Menukar refresh token (cookie) dengan access token baru dan merotasi cookie. */
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 30, ttl: 60_000 } })
+  @Throttle({ default: { limit: () => authLimit() * 3, ttl: 60_000 } })
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,

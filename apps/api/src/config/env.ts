@@ -19,12 +19,25 @@ export const envSchema = z
       .int()
       .positive()
       .default(15 * 60),
+    /** Permintaan /auth per menit per IP (refresh: tiga kali lipat). */
+    AUTH_RATE_LIMIT: z.coerce.number().int().positive().default(10),
     REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
     ALADHAN_BASE_URL: z.preprocess(emptyToUndefined, z.url().default('https://api.aladhan.com/v1')),
     ALADHAN_TIMEOUT_MS: z.coerce.number().int().positive().default(5000),
-    AI_PROVIDER: z.preprocess(emptyToUndefined, z.string().optional()),
+    ALQURAN_CLOUD_BASE_URL: z.preprocess(
+      emptyToUndefined,
+      z.url().default('https://api.alquran.cloud/v1'),
+    ),
+    QURAN_AUDIO_BASE_URL: z.preprocess(
+      emptyToUndefined,
+      z.url().default('https://cdn.islamic.network/quran/audio/128/ar.alafasy'),
+    ),
+    /** Penyedia AI untuk AI Polish. Kosong berarti fitur mati. */
+    AI_PROVIDER: z.preprocess(emptyToUndefined, z.enum(['anthropic']).optional()),
     AI_API_KEY: z.preprocess(emptyToUndefined, z.string().optional()),
+    AI_MODEL: z.preprocess(emptyToUndefined, z.string().default('claude-opus-5-5')),
     AI_DAILY_LIMIT: z.coerce.number().int().nonnegative().default(10),
+    AI_MAX_INPUT_CHARS: z.coerce.number().int().positive().default(8000),
     CORS_ORIGIN: z.preprocess(emptyToUndefined, z.string().default('http://localhost:5173')),
     LOG_LEVEL: z
       .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])

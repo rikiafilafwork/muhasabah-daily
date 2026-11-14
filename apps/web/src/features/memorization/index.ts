@@ -1,0 +1,1 @@
+export { memorizationRoutes } from './routes';

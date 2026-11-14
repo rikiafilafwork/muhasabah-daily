@@ -19,6 +19,8 @@ const apiEnv = {
   JWT_REFRESH_SECRET: 'e2e-refresh-secret-0123456789-abcdefghijklmno',
   ALADHAN_BASE_URL: `http://localhost:${MOCK_PORT}`,
   CORS_ORIGIN: `http://localhost:${WEB_PORT}`,
+  // Banyak test mendaftar akun baru dalam satu menit dari IP yang sama.
+  AUTH_RATE_LIMIT: '200',
 };
 
 export default defineConfig({
@@ -43,7 +45,7 @@ export default defineConfig({
     },
     {
       command:
-        'pnpm exec prisma migrate deploy && pnpm exec ts-node --transpile-only prisma/seed/index.ts --offline && pnpm exec ts-node --transpile-only prisma/seed/demo-cli.ts && pnpm exec nest build && node dist/main.js',
+        'pnpm exec prisma migrate deploy && pnpm exec ts-node --transpile-only prisma/seed/index.ts --offline && pnpm exec ts-node --transpile-only prisma/seed/quran-cli.ts --fixture && pnpm exec ts-node --transpile-only prisma/seed/demo-cli.ts && pnpm exec nest build && node dist/main.js',
       cwd: '../api',
       url: `http://localhost:${API_PORT}/api/v1/health`,
       env: apiEnv,
