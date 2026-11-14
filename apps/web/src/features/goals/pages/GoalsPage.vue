@@ -54,7 +54,7 @@ function open(goal: Goal | null) {
   <div class="mx-auto max-w-5xl space-y-6">
     <header class="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="text-2xl font-semibold">Goals</h1>
+        <h1 class="text-3xl font-semibold tracking-tight">Goals</h1>
         <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
           Target terukur. Progres berasal dari nilai manual dan habit yang ditautkan.
         </p>

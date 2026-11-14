@@ -130,7 +130,7 @@ const kindHint = {
     <template v-if="plan">
       <header class="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 class="text-2xl font-semibold">
+          <h1 class="text-3xl font-semibold tracking-tight">
             {{ plan.title ?? `QS. ${plan.surahName}: ${plan.fromAyah}–${plan.toAyah}` }}
           </h1>
           <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">

@@ -195,7 +195,7 @@ function go(d: string) {
     <section class="min-w-0 space-y-4">
       <header class="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 class="text-2xl font-semibold">Jurnal</h1>
+          <h1 class="text-3xl font-semibold tracking-tight">Jurnal</h1>
           <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">{{ formatLongDate(date) }}</p>
         </div>
         <div class="flex items-center gap-1">

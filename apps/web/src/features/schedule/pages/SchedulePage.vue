@@ -126,7 +126,7 @@ function openEvent(event: CalendarEvent | null, date?: string) {
   <div class="mx-auto max-w-6xl space-y-4">
     <header class="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="text-2xl font-semibold">Jadwal</h1>
+        <h1 class="text-3xl font-semibold tracking-tight">Jadwal</h1>
         <p class="mt-1 text-sm text-stone-500 dark:text-stone-400" aria-live="polite">
           {{ heading }}
         </p>
@@ -266,7 +266,7 @@ function openEvent(event: CalendarEvent | null, date?: string) {
     <!-- Bulan -->
     <div
       v-else
-      class="overflow-hidden rounded-2xl border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900"
+      class="overflow-hidden rounded-3xl border border-stone-200/80 bg-white shadow-soft dark:border-stone-800 dark:bg-stone-900"
     >
       <div
         class="grid grid-cols-7 border-b border-stone-200 text-center text-xs text-stone-500 dark:border-stone-800 dark:text-stone-400"

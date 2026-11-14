@@ -73,7 +73,7 @@ const statusText = computed(() => {
   <div class="mx-auto max-w-3xl space-y-5">
     <header class="flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h1 class="text-2xl font-semibold">Dzikir</h1>
+        <h1 class="text-3xl font-semibold tracking-tight">Dzikir</h1>
         <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">{{ formatLongDate(today) }}</p>
       </div>
       <p

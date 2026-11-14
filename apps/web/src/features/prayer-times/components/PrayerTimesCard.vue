@@ -71,7 +71,7 @@ watch(
       </p>
       <RouterLink
         to="/settings"
-        class="inline-flex rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800"
+        class="inline-flex rounded-full bg-brand-700 px-4.5 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-800"
       >
         Atur lokasi
       </RouterLink>
@@ -89,18 +89,31 @@ watch(
       <UiButton variant="secondary" @click="store.load(localToday)">Coba lagi</UiButton>
     </div>
 
-    <div v-else class="grid grid-cols-1 gap-6 md:grid-cols-[1fr_1.4fr] md:items-center">
+    <div v-else class="grid grid-cols-1 gap-6 md:grid-cols-[1fr_1.4fr]">
       <div
-        class="rounded-xl bg-gradient-to-br from-brand-700 to-brand-900 p-5 text-white"
+        class="relative isolate flex flex-col justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-brand-700 via-brand-800 to-brand-950 p-6 text-white shadow-lg shadow-brand-900/20"
         aria-live="polite"
       >
+        <div
+          class="absolute -top-16 -right-10 -z-10 size-48 rounded-full bg-gold-400/30 blur-2xl"
+          aria-hidden="true"
+        />
+        <div
+          class="absolute -bottom-20 -left-10 -z-10 size-48 rounded-full bg-brand-400/25 blur-2xl"
+          aria-hidden="true"
+        />
         <p class="text-sm text-brand-100">
           {{ session.user?.city ?? 'Lokasimu' }} · {{ formatLongDate(localToday) }}
         </p>
         <template v-if="next">
-          <p class="mt-3 text-sm text-brand-100">Menuju {{ next.label }}</p>
           <p
-            class="mt-1 font-mono text-4xl font-semibold tabular-nums"
+            class="mt-4 inline-flex w-fit items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm text-brand-50 ring-1 ring-white/15"
+          >
+            <span class="size-1.5 rounded-full bg-gold-300" aria-hidden="true" />
+            Menuju {{ next.label }}
+          </p>
+          <p
+            class="mt-1 font-display text-5xl font-semibold tracking-tight tabular-nums"
             :aria-label="`${formatDurationWords(countdown.remainingSeconds.value ?? 0)} lagi menuju ${next.label}`"
             data-testid="countdown"
           >
@@ -113,24 +126,20 @@ watch(
 
       <div>
         <div class="mb-2 flex items-center justify-between">
-          <h2 class="text-base font-semibold">Jadwal hari ini</h2>
+          <h2 class="font-display text-lg font-semibold">Jadwal hari ini</h2>
           <span v-if="store.today?.stale" class="text-xs text-amber-700 dark:text-amber-400">
             Perkiraan (sumber tidak tersedia)
           </span>
         </div>
-        <ul
-          v-if="store.today"
-          class="divide-y divide-stone-100 dark:divide-stone-800"
-          data-testid="prayer-list"
-        >
+        <ul v-if="store.today" class="space-y-0.5" data-testid="prayer-list">
           <li
             v-for="key in PRAYER_KEYS"
             :key="key"
             :class="[
-              'flex items-center justify-between px-2 py-2 text-sm',
+              'flex items-center justify-between rounded-xl px-3 py-2 text-sm',
               key === 'sunrise' && 'text-stone-500 dark:text-stone-400',
               key === current &&
-                'rounded-lg bg-brand-50 font-semibold text-brand-800 dark:bg-brand-900/40 dark:text-brand-100',
+                'bg-brand-50 font-semibold text-brand-800 dark:bg-brand-900/40 dark:text-brand-100',
             ]"
             :aria-current="key === current ? 'time' : undefined"
           >

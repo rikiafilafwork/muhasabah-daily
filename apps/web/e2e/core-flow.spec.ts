@@ -18,7 +18,8 @@ test('daftar, atur lokasi, lihat waktu sholat, keluar, lalu masuk lagi', async (
   await expect(page).toHaveURL(/\/settings\?welcome=1/);
   await expect(page.getByText('Atur lokasi agar jadwal sholat')).toBeVisible();
 
-  await page.getByLabel('Pilih kota').selectOption('Jakarta');
+  await page.getByLabel('Pilih kota').click();
+  await page.getByRole('option', { name: 'Jakarta', exact: true }).click();
   await expect(page.getByLabel('Lintang (latitude)')).toHaveValue('-6.2088');
   await page.getByRole('button', { name: 'Simpan pengaturan' }).click();
 
@@ -34,6 +35,7 @@ test('daftar, atur lokasi, lihat waktu sholat, keluar, lalu masuk lagi', async (
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Hamba Allah' })).toBeVisible();
 
+  await page.getByRole('button', { name: 'Akun' }).click();
   await page.getByRole('button', { name: 'Keluar' }).click();
   await expect(page).toHaveURL(/\/login/);
 

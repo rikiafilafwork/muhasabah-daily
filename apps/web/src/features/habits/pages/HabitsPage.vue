@@ -48,7 +48,7 @@ function onChanged() {
   <div class="mx-auto max-w-5xl space-y-6">
     <header class="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="text-2xl font-semibold">Habit</h1>
+        <h1 class="text-3xl font-semibold tracking-tight">Habit</h1>
         <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
           Kebiasaan kecil yang dijaga setiap hari.
         </p>

@@ -34,7 +34,8 @@ test('hafidz: buat rencana, dengarkan, baca sendiri, dan lanjut tahap', async ({
   await page.goto('/memorization');
   await page.getByRole('button', { name: 'Rencana baru' }).click();
   const dialog = page.getByRole('dialog', { name: 'Rencana hafalan baru' });
-  await dialog.getByLabel('Surah').selectOption({ label: '112. Al-Ikhlaas (4 ayat)' });
+  await dialog.getByLabel('Surah').click();
+  await dialog.getByRole('option', { name: '112. Al-Ikhlaas (4 ayat)' }).click();
   await dialog.getByLabel('Sampai ayat').fill('2');
   await dialog.getByLabel('Dengarkan').fill('2');
   await dialog.getByLabel('Baca sendiri').fill('1');
@@ -68,7 +69,8 @@ test('hafidz: audio gagal dimuat bisa dilewati', async ({ page }) => {
   await page.goto('/memorization');
   await page.getByRole('button', { name: 'Rencana baru' }).click();
   const dialog = page.getByRole('dialog', { name: 'Rencana hafalan baru' });
-  await dialog.getByLabel('Surah').selectOption({ label: '112. Al-Ikhlaas (4 ayat)' });
+  await dialog.getByLabel('Surah').click();
+  await dialog.getByRole('option', { name: '112. Al-Ikhlaas (4 ayat)' }).click();
   await dialog.getByLabel('Sampai ayat').fill('1');
   await dialog.getByLabel('Dengarkan').fill('1');
   await dialog.getByRole('button', { name: 'Buat rencana' }).click();
@@ -106,7 +108,8 @@ test('kajian: tulis catatan dengan rujukan ayat lalu cari', async ({ page }) => 
   await page.keyboard.type('Tauhid adalah pondasi amal.');
   await page.getByRole('button', { name: '+ Rujukan ayat' }).click();
   const dialog = page.getByRole('dialog', { name: 'Sisipkan rujukan ayat' });
-  await dialog.getByLabel('Surah').selectOption({ label: '112. Al-Ikhlaas (4 ayat)' });
+  await dialog.getByLabel('Surah').click();
+  await dialog.getByRole('option', { name: '112. Al-Ikhlaas (4 ayat)' }).click();
   await dialog.getByLabel('Sampai ayat').fill('2');
   await dialog.getByRole('button', { name: 'Sisipkan' }).click();
 

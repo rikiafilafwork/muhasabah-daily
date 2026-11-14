@@ -1,11 +1,30 @@
 @import 'tailwindcss';
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/fraunces';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans:
+    'Inter Variable', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Fraunces Variable', 'Fraunces', ui-serif, Georgia, 'Times New Roman', serif;
   --font-arabic:
     'Amiri', 'Scheherazade New', 'Noto Naskh Arabic', 'Geeza Pro', 'Traditional Arabic', serif;
+
+  /* Netral hangat: krem di sisi terang, cokelat-arang di sisi gelap. Nilai 400–600
+     dipertahankan dekat palet stone bawaan agar kontras teks tetap lolos WCAG AA. */
+  --color-stone-50: #fbf8f3;
+  --color-stone-100: #f4efe6;
+  --color-stone-200: #e8e1d4;
+  --color-stone-300: #d5ccbc;
+  --color-stone-400: #a8a093;
+  --color-stone-500: #77706a;
+  --color-stone-600: #57524c;
+  --color-stone-700: #443f3a;
+  --color-stone-800: #2b2724;
+  --color-stone-900: #1d1a18;
+  --color-stone-950: #12100f;
+
   --color-brand-50: #ecfdf5;
   --color-brand-100: #d1fae5;
   --color-brand-200: #a7f3d0;
@@ -17,17 +36,93 @@
   --color-brand-800: #065f46;
   --color-brand-900: #064e3b;
   --color-brand-950: #022c22;
+
+  /* Aksen emas lembut. */
+  --color-gold-50: #fdf8ec;
+  --color-gold-100: #f9edcc;
+  --color-gold-200: #f2d995;
+  --color-gold-300: #e9c15c;
+  --color-gold-400: #dcaa3a;
+  --color-gold-500: #c18e22;
+  --color-gold-600: #9c6f19;
+  --color-gold-700: #7a5518;
+
+  --shadow-soft: 0 1px 2px rgb(60 45 20 / 0.04), 0 8px 24px -12px rgb(60 45 20 / 0.12);
+
+  --animate-sheet-up: sheet-up 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-pop: pop 160ms ease-out;
+
+  @keyframes sheet-up {
+    from {
+      transform: translateY(24px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  @keyframes pop {
+    from {
+      transform: translateY(-4px) scale(0.98);
+      opacity: 0;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
 }
 
 @layer base {
   html {
     @apply bg-stone-50 text-stone-900 antialiased dark:bg-stone-950 dark:text-stone-100;
     color-scheme: light;
+    -webkit-tap-highlight-color: transparent;
   }
   html.dark {
     color-scheme: dark;
   }
+  body {
+    @apply bg-stone-50 dark:bg-stone-950;
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 50;
+    letter-spacing: -0.015em;
+  }
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-brand-600 dark:outline-brand-500;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+/* Ruang aman bawah untuk tab bar di perangkat dengan home indicator. */
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Cahaya lembut di latar atas halaman aplikasi. */
+.app-glow {
+  background: radial-gradient(
+    60% 100% at 50% 0%,
+    color-mix(in oklab, var(--color-brand-100) 75%, transparent),
+    color-mix(in oklab, var(--color-gold-50) 40%, transparent) 55%,
+    transparent
+  );
+}
+.dark .app-glow {
+  background: radial-gradient(
+    60% 100% at 50% 0%,
+    color-mix(in oklab, var(--color-brand-950) 90%, transparent),
+    transparent
+  );
 }

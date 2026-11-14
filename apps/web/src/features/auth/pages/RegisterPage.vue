@@ -28,7 +28,7 @@ function onSubmit() {
 
 <template>
   <div>
-    <h1 class="text-2xl font-semibold">Buat akun</h1>
+    <h1 class="text-3xl font-semibold tracking-tight">Buat akun</h1>
     <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
       Data tersimpan di server lokalmu sendiri.
     </p>

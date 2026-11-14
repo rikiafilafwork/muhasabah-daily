@@ -146,7 +146,7 @@ onMounted(async () => {
 <template>
   <div class="mx-auto grid grid-cols-1 max-w-5xl gap-6 lg:grid-cols-[1.1fr_1fr]">
     <header class="lg:col-span-2">
-      <h1 class="text-2xl font-semibold">Fokus</h1>
+      <h1 class="text-3xl font-semibold tracking-tight">Fokus</h1>
       <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
         Satu tugas, satu sesi. Timer tetap akurat meski tab berpindah atau halaman dimuat ulang.
       </p>

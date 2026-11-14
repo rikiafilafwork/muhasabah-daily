@@ -106,7 +106,9 @@ onBeforeRouteLeave(
 
     <form v-if="loaded" class="space-y-4" novalidate @submit.prevent="save" @input="markDirty">
       <header class="flex flex-wrap items-center justify-between gap-3">
-        <h1 class="text-2xl font-semibold">{{ id ? 'Ubah catatan' : 'Catatan baru' }}</h1>
+        <h1 class="text-3xl font-semibold tracking-tight">
+          {{ id ? 'Ubah catatan' : 'Catatan baru' }}
+        </h1>
         <div class="flex items-center gap-2">
           <span
             class="text-xs text-stone-500 dark:text-stone-400"

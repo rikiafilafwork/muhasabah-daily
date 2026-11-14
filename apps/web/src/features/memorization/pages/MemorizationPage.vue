@@ -34,7 +34,7 @@ function onCreated(plan: MemorizationPlan) {
   <div class="mx-auto max-w-4xl space-y-6">
     <header class="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="text-2xl font-semibold">Hafidz</h1>
+        <h1 class="text-3xl font-semibold tracking-tight">Hafidz</h1>
         <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
           Hafalan bertahap dengan metode tikrar: dengar, baca, sambung.
         </p>
@@ -49,7 +49,7 @@ function onCreated(plan: MemorizationPlan) {
       <li v-for="p in plans" :key="p.id">
         <RouterLink
           :to="`/memorization/${p.id}`"
-          class="block rounded-2xl border border-stone-200 bg-white p-5 shadow-xs hover:border-brand-300 dark:border-stone-800 dark:bg-stone-900"
+          class="block rounded-3xl border border-stone-200/80 bg-white p-5 shadow-soft transition hover:-translate-y-0.5 hover:border-brand-300 dark:border-stone-800 dark:bg-stone-900"
           data-testid="plan-card"
         >
           <div class="flex items-start justify-between gap-3">

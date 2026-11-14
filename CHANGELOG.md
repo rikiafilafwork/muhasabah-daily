@@ -2,6 +2,24 @@
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/id-ID/1.1.0/) dan versi mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 
+## [Belum dirilis]
+
+### Diubah
+
+- **Tampilan baru bergaya web personal:** sidebar admin diganti header dengan navigasi pil (desktop) dan tab bar bawah + lembar "Semua fitur" (mobile). Palet krem hangat dengan aksen zamrud dan emas, judul serif Fraunces, kartu dan tombol lebih membulat; font Inter dan Fraunces dibundel sehingga tetap jalan offline.
+- **Beranda:** sapaan besar, tanggal Masehi dan Hijriah (Umm al-Qura, bisa selisih sehari dengan penetapan resmi), pintasan cepat, dan kartu hitung mundur sholat yang diperbarui.
+- **Halaman masuk/daftar:** tata letak terbelah dengan panel sambutan di layar lebar.
+- **Dialog** tampil sebagai lembar dari bawah di layar kecil.
+- **Select** diganti listbox kustom yang mengikuti tema (termasuk mode gelap), dengan kolom cari untuk daftar panjang dan dukungan keyboard.
+
+### Ditambahkan
+
+- **Tombol tema di header** (Terang → Gelap → Ikuti sistem), juga di halaman masuk. Pilihan disimpan ke profil sehingga ikut di perangkat lain.
+
+### Dihapus
+
+- Halaman "segera hadir" yang tidak lagi dipakai.
+
 ## [1.0.0] — 2026-11-14
 
 Rilis pertama yang lengkap: fase 5 dan 6 dari [peta fase](ARCHITECTURE.md#16-pemetaan-ke-fase-pengerjaan).

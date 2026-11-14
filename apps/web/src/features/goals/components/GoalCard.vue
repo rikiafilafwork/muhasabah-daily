@@ -22,7 +22,7 @@ const deadlineLabel = computed(() => {
 
 <template>
   <article
-    class="flex flex-col rounded-2xl border border-stone-200 bg-white p-5 shadow-xs dark:border-stone-800 dark:bg-stone-900"
+    class="flex flex-col rounded-3xl border border-stone-200/80 bg-white p-5 shadow-soft dark:border-stone-800 dark:bg-stone-900"
     data-testid="goal-card"
   >
     <header class="flex items-start justify-between gap-3">

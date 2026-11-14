@@ -45,7 +45,8 @@ test('to-do: tambah cepat ke fokus, atur prioritas, selesaikan tugas', async ({ 
   await page.getByRole('button', { name: 'Tugas baru' }).click();
   const dialog = page.getByRole('dialog', { name: 'Tugas baru' });
   await dialog.getByLabel('Judul').fill('Siapkan materi kajian');
-  await dialog.getByLabel('Prioritas').selectOption('high');
+  await dialog.getByLabel('Prioritas').click();
+  await dialog.getByRole('option', { name: 'Tinggi' }).click();
   await dialog.getByRole('button', { name: 'Simpan' }).click();
   await expect(list).toContainText('Siapkan materi kajian');
   await expect(list).toContainText('Tinggi');
@@ -91,7 +92,8 @@ test('goal: tautkan habit dan progres menghitung centang', async ({ page }) => {
 });
 
 test('jadwal: buat agenda dan tampil di hari ini beserta waktu sholat', async ({ page }) => {
-  await page.getByLabel('Pilih kota').selectOption('Jakarta');
+  await page.getByLabel('Pilih kota').click();
+  await page.getByRole('option', { name: 'Jakarta', exact: true }).click();
   await page.getByRole('button', { name: 'Simpan pengaturan' }).click();
   await expect(page).toHaveURL(/\/$/);
 

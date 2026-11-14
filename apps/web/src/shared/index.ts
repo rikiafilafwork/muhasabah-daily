@@ -3,6 +3,7 @@ export { default as UiButton } from './components/UiButton.vue';
 export { default as UiCard } from './components/UiCard.vue';
 export { default as UiColorPicker } from './components/UiColorPicker.vue';
 export { default as UiDialog } from './components/UiDialog.vue';
+export { default as UiIcon } from './components/UiIcon.vue';
 export { default as UiInput } from './components/UiInput.vue';
 export { default as UiSelect } from './components/UiSelect.vue';
 export { default as UiTextarea } from './components/UiTextarea.vue';

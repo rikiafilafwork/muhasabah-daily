@@ -1,13 +1,18 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useSessionStore } from '@/features/auth';
-import { NAV_ITEMS } from './navigation';
+import { UiIcon } from '@/shared';
+import MoreSheet from './components/MoreSheet.vue';
+import PopoverMenu from './components/PopoverMenu.vue';
+import ThemeToggle from './components/ThemeToggle.vue';
+import { DESKTOP_MORE, DESKTOP_PRIMARY, isActive, MOBILE_TABS, SETTINGS_ICON } from './navigation';
 
 const session = useSessionStore();
 const router = useRouter();
 const route = useRoute();
-const menuOpen = ref(false);
+const sheetOpen = ref(false);
+
 const initials = computed(() =>
   (session.user?.name ?? '?')
     .split(/\s+/)
@@ -15,137 +20,210 @@ const initials = computed(() =>
     .map((p) => p[0]?.toUpperCase())
     .join(''),
 );
-
-watch(
-  () => route.fullPath,
-  () => (menuOpen.value = false),
+const moreActive = computed(() => DESKTOP_MORE.some((i) => isActive(i, route.path)));
+const sheetTabActive = computed(
+  () => sheetOpen.value || !MOBILE_TABS.some((i) => isActive(i, route.path)),
 );
 
 async function logout() {
+  sheetOpen.value = false;
   await session.logout();
   await router.replace({ name: 'login' });
 }
 </script>
 
 <template>
-  <div class="min-h-dvh md:grid md:grid-cols-[15rem_1fr]">
+  <div class="relative min-h-dvh">
     <a
       href="#main"
-      class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:text-sm"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:shadow-soft dark:focus:bg-stone-900"
     >
       Lewati ke konten
     </a>
 
+    <!-- Cahaya lembut di latar atas, memberi kesan hangat tanpa mengganggu konten. -->
+    <div class="app-glow pointer-events-none absolute inset-x-0 top-0 h-96" aria-hidden="true" />
+
     <header
-      class="sticky top-0 z-30 flex items-center justify-between border-b border-stone-200 bg-white/90 px-4 py-3 backdrop-blur md:hidden dark:border-stone-800 dark:bg-stone-950/90"
+      class="sticky top-0 z-40 border-b border-stone-200/70 bg-stone-50/80 backdrop-blur-lg dark:border-stone-800/70 dark:bg-stone-950/75"
     >
-      <RouterLink to="/" class="font-semibold text-brand-800 dark:text-brand-500"
-        >Muhasabah Daily</RouterLink
-      >
-      <button
-        type="button"
-        class="rounded-lg p-2 hover:bg-stone-100 dark:hover:bg-stone-800"
-        :aria-expanded="menuOpen"
-        aria-controls="sidebar"
-        @click="menuOpen = !menuOpen"
-      >
-        <span class="sr-only">{{ menuOpen ? 'Tutup menu' : 'Buka menu' }}</span>
-        <svg
-          class="size-5"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
-        >
-          <path
-            :d="menuOpen ? 'M6 6l12 12M18 6 6 18' : 'M4 6h16M4 12h16M4 18h16'"
-            stroke-linecap="round"
-          />
-        </svg>
-      </button>
-    </header>
-
-    <aside
-      id="sidebar"
-      :class="[
-        'fixed inset-y-0 left-0 z-40 flex w-60 flex-col border-r border-stone-200 bg-white px-3 py-4 transition-transform md:sticky md:top-0 md:h-dvh md:translate-x-0 dark:border-stone-800 dark:bg-stone-900',
-        menuOpen ? 'translate-x-0' : '-translate-x-full',
-      ]"
-    >
-      <RouterLink to="/" class="mb-6 flex items-center gap-2 px-2">
-        <img src="/favicon.svg" alt="" class="size-8" />
-        <span class="font-semibold text-brand-800 dark:text-brand-500">Muhasabah Daily</span>
-      </RouterLink>
-
-      <nav aria-label="Navigasi utama" class="flex-1 overflow-y-auto">
-        <ul class="space-y-0.5">
-          <li v-for="item in NAV_ITEMS" :key="item.to">
-            <RouterLink
-              :to="item.to"
-              class="group flex items-center gap-3 rounded-lg px-2 py-2 text-sm text-stone-700 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
-              exact-active-class="!bg-brand-50 !text-brand-800 font-medium dark:!bg-brand-900/40 dark:!text-brand-100"
-            >
-              <svg
-                class="size-5 shrink-0"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.75"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path :d="item.icon" />
-              </svg>
-              <span class="flex-1">{{ item.label }}</span>
-              <span
-                v-if="item.phase"
-                class="rounded bg-stone-100 px-1.5 py-0.5 text-[11px] font-medium text-stone-600 dark:bg-stone-800 dark:text-stone-300"
-              >
-                segera
-              </span>
-            </RouterLink>
-          </li>
-        </ul>
-      </nav>
-
-      <div class="mt-4 border-t border-stone-200 pt-4 dark:border-stone-800">
-        <RouterLink
-          to="/settings"
-          class="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-stone-100 dark:hover:bg-stone-800"
-          exact-active-class="bg-stone-100 dark:bg-stone-800"
-        >
+      <div class="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
+        <RouterLink to="/" class="flex shrink-0 items-center gap-2.5">
+          <img src="/favicon.svg" alt="" class="size-8" />
           <span
-            class="flex size-8 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-800 dark:bg-brand-900 dark:text-brand-100"
-            aria-hidden="true"
+            class="font-display text-lg font-semibold tracking-tight text-stone-900 dark:text-white"
           >
-            {{ initials }}
-          </span>
-          <span class="min-w-0 flex-1">
-            <span class="block truncate text-sm font-medium">{{ session.user?.name }}</span>
-            <span class="block text-xs text-stone-600 dark:text-stone-400">Pengaturan</span>
+            Muhasabah<span class="text-brand-700 dark:text-brand-400"> Daily</span>
           </span>
         </RouterLink>
-        <button
-          type="button"
-          class="mt-1 w-full rounded-lg px-2 py-2 text-left text-sm text-stone-600 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800"
-          @click="logout"
-        >
-          Keluar
-        </button>
+
+        <nav aria-label="Navigasi utama" class="mx-auto hidden lg:block">
+          <ul
+            class="flex items-center gap-1 rounded-full border border-stone-200/80 bg-white/70 p-1 shadow-soft dark:border-stone-800 dark:bg-stone-900/70"
+          >
+            <li v-for="item in DESKTOP_PRIMARY" :key="item.to">
+              <RouterLink
+                :to="item.to"
+                :class="[
+                  'block rounded-full px-3.5 py-1.5 text-sm font-medium transition',
+                  isActive(item, route.path)
+                    ? 'bg-brand-700 text-white shadow-sm'
+                    : 'text-stone-600 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-white',
+                ]"
+                :aria-current="isActive(item, route.path) ? 'page' : undefined"
+              >
+                {{ item.label }}
+              </RouterLink>
+            </li>
+            <li>
+              <PopoverMenu panel-class="w-64">
+                <template #trigger="{ open }">
+                  <span
+                    :class="[
+                      'flex items-center gap-1 rounded-full px-3.5 py-1.5 text-sm font-medium transition',
+                      moreActive
+                        ? 'bg-brand-700 text-white'
+                        : 'text-stone-600 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-white',
+                    ]"
+                  >
+                    Lainnya
+                    <UiIcon
+                      path="M6 9l6 6 6-6"
+                      :class="['size-4 transition', open && 'rotate-180']"
+                      :stroke-width="2"
+                    />
+                  </span>
+                </template>
+                <ul>
+                  <li v-for="item in DESKTOP_MORE" :key="item.to">
+                    <RouterLink
+                      :to="item.to"
+                      :class="[
+                        'flex items-center gap-3 rounded-xl p-2 transition hover:bg-stone-100 dark:hover:bg-stone-800',
+                        isActive(item, route.path) && 'bg-brand-50 dark:bg-brand-950',
+                      ]"
+                      :aria-current="isActive(item, route.path) ? 'page' : undefined"
+                    >
+                      <span
+                        class="flex size-9 items-center justify-center rounded-xl bg-brand-100 text-brand-800 dark:bg-brand-900 dark:text-brand-200"
+                      >
+                        <UiIcon :path="item.icon" class="size-5" />
+                      </span>
+                      <span>
+                        <span class="block text-sm font-medium">{{ item.label }}</span>
+                        <span class="block text-xs text-stone-500 dark:text-stone-400">
+                          {{ item.hint }}
+                        </span>
+                      </span>
+                    </RouterLink>
+                  </li>
+                </ul>
+              </PopoverMenu>
+            </li>
+          </ul>
+        </nav>
+
+        <div class="ml-auto flex items-center gap-1 lg:ml-0">
+          <ThemeToggle />
+          <PopoverMenu align="right" panel-class="w-60">
+            <template #trigger>
+              <span
+                class="ml-1 flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-gold-200 to-gold-400 text-xs font-bold text-gold-700 ring-2 ring-white transition hover:ring-gold-200 dark:from-gold-500 dark:to-gold-700 dark:text-gold-50 dark:ring-stone-900"
+              >
+                <span aria-hidden="true">{{ initials }}</span>
+                <span class="sr-only">Akun</span>
+              </span>
+            </template>
+            <template #default>
+              <div class="border-b border-stone-200 px-3 pt-1 pb-3 dark:border-stone-800">
+                <p class="truncate text-sm font-semibold">{{ session.user?.name }}</p>
+                <p class="truncate text-xs text-stone-500 dark:text-stone-400">
+                  {{ session.user?.email }}
+                </p>
+              </div>
+              <RouterLink
+                to="/settings"
+                class="mt-1 flex items-center gap-3 rounded-xl px-3 py-2 text-sm hover:bg-stone-100 dark:hover:bg-stone-800"
+              >
+                <UiIcon :path="SETTINGS_ICON" class="size-4 text-stone-500" />
+                Pengaturan
+              </RouterLink>
+              <button
+                type="button"
+                class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950"
+                @click="logout"
+              >
+                <UiIcon path="M9 21H5V3h4M16 17l5-5-5-5M21 12H9" class="size-4" />
+                Keluar
+              </button>
+            </template>
+          </PopoverMenu>
+        </div>
       </div>
-    </aside>
+    </header>
 
-    <div
-      v-if="menuOpen"
-      class="fixed inset-0 z-30 bg-stone-950/40 md:hidden"
-      aria-hidden="true"
-      @click="menuOpen = false"
-    />
-
-    <main id="main" class="px-4 py-6 md:px-8 md:py-8">
+    <main
+      id="main"
+      class="relative mx-auto max-w-6xl px-4 pt-6 pb-28 sm:px-6 lg:pt-10 lg:pb-16"
+      tabindex="-1"
+    >
       <RouterView />
     </main>
+
+    <!-- Tab bar mobile -->
+    <nav
+      aria-label="Navigasi utama"
+      class="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200/80 bg-white/90 pb-safe backdrop-blur-lg lg:hidden dark:border-stone-800 dark:bg-stone-950/90"
+    >
+      <ul class="mx-auto grid max-w-md grid-cols-5">
+        <li v-for="item in MOBILE_TABS" :key="item.to">
+          <RouterLink
+            :to="item.to"
+            :class="[
+              'flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium transition',
+              isActive(item, route.path) && !sheetOpen
+                ? 'text-brand-800 dark:text-brand-300'
+                : 'text-stone-500 dark:text-stone-400',
+            ]"
+            :aria-current="isActive(item, route.path) ? 'page' : undefined"
+          >
+            <span
+              :class="[
+                'flex h-7 w-12 items-center justify-center rounded-full transition',
+                isActive(item, route.path) && !sheetOpen && 'bg-brand-100 dark:bg-brand-900/70',
+              ]"
+            >
+              <UiIcon :path="item.icon" class="size-5" />
+            </span>
+            {{ item.label }}
+          </RouterLink>
+        </li>
+        <li>
+          <button
+            type="button"
+            :class="[
+              'flex w-full flex-col items-center gap-0.5 py-2 text-[11px] font-medium transition',
+              sheetTabActive
+                ? 'text-brand-800 dark:text-brand-300'
+                : 'text-stone-500 dark:text-stone-400',
+            ]"
+            :aria-expanded="sheetOpen"
+            @click="sheetOpen = true"
+          >
+            <span
+              :class="[
+                'flex h-7 w-12 items-center justify-center rounded-full transition',
+                sheetTabActive && 'bg-brand-100 dark:bg-brand-900/70',
+              ]"
+            >
+              <UiIcon path="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" class="size-5" />
+            </span>
+            Lainnya
+          </button>
+        </li>
+      </ul>
+    </nav>
+
+    <MoreSheet v-model:open="sheetOpen" @logout="logout" />
   </div>
 </template>

@@ -17,7 +17,7 @@ const tones = {
 <template>
   <div
     :role="tone === 'error' ? 'alert' : 'status'"
-    :class="['rounded-lg border px-4 py-3 text-sm', tones[tone]]"
+    :class="['rounded-2xl border px-4 py-3 text-sm', tones[tone]]"
   >
     <slot />
   </div>

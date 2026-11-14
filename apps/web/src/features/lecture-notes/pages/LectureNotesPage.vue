@@ -40,14 +40,14 @@ onMounted(() => load());
   <div class="mx-auto max-w-4xl space-y-5">
     <header class="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="text-2xl font-semibold">Catatan Kajian</h1>
+        <h1 class="text-3xl font-semibold tracking-tight">Catatan Kajian</h1>
         <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
           Ringkasan kajian dengan rujukan ayat.
         </p>
       </div>
       <RouterLink
         to="/lecture-notes/new"
-        class="inline-flex rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800"
+        class="inline-flex rounded-full bg-brand-700 px-4.5 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-800"
       >
         Catatan baru
       </RouterLink>
@@ -70,7 +70,7 @@ onMounted(() => load());
       <li v-for="n in notes" :key="n.id">
         <RouterLink
           :to="`/lecture-notes/${n.id}`"
-          class="block rounded-2xl border border-stone-200 bg-white p-4 shadow-xs hover:border-brand-300 dark:border-stone-800 dark:bg-stone-900"
+          class="block rounded-3xl border border-stone-200/80 bg-white p-4 shadow-soft transition hover:-translate-y-0.5 hover:border-brand-300 dark:border-stone-800 dark:bg-stone-900"
         >
           <div class="flex flex-wrap items-baseline justify-between gap-2">
             <h2 class="font-semibold">{{ n.title }}</h2>

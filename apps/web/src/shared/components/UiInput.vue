@@ -31,10 +31,10 @@ const id = useId();
       :aria-invalid="error ? true : undefined"
       :aria-describedby="error ? `${id}-error` : hint ? `${id}-hint` : undefined"
       :class="[
-        'block w-full rounded-lg border bg-white px-3 py-2 text-sm text-stone-900 shadow-xs placeholder:text-stone-400 focus:outline-2 focus:outline-offset-0 dark:bg-stone-900 dark:text-stone-100',
+        'block w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm text-stone-900 shadow-xs transition placeholder:text-stone-400 focus:outline-2 focus:outline-offset-0 dark:bg-stone-950 dark:text-stone-100',
         error
           ? 'border-red-500 focus:outline-red-500'
-          : 'border-stone-300 focus:outline-brand-600 dark:border-stone-700',
+          : 'border-stone-300 focus:border-brand-600 focus:outline-brand-600/30 dark:border-stone-700',
       ]"
     />
     <p v-if="error" :id="`${id}-error`" class="text-sm text-red-700 dark:text-red-400">

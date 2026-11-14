@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import type { CreateTaskInput, Project, Task } from '@muhasabah/shared';
 import { useUserClock } from '@/features/auth';
-import { COLOR_CLASSES, UiAlert, UiButton, UiCard } from '@/shared';
+import { COLOR_CLASSES, UiAlert, UiButton, UiCard, UiSelect } from '@/shared';
 import { projectsApi, tasksApi } from '../api';
 import ProjectDialog from '../components/ProjectDialog.vue';
 import TaskDialog from '../components/TaskDialog.vue';
@@ -35,6 +35,14 @@ onMounted(loadProjects);
 function go(v: TaskView) {
   void router.replace({ query: { view: v } });
 }
+
+// Pemilih proyek versi mobile.
+const projectPick = computed({
+  get: () => (currentProject.value ? view.value : ''),
+  set: (v: string) => {
+    if (v) go(v as TaskView);
+  },
+});
 
 // Tambah cepat
 const quickTitle = ref('');
@@ -102,7 +110,7 @@ const navClass = (active: boolean) => [
 <template>
   <div class="mx-auto grid grid-cols-1 max-w-6xl gap-6 lg:grid-cols-[14rem_1fr]">
     <aside aria-label="Daftar tugas" class="min-w-0">
-      <h1 class="mb-4 text-2xl font-semibold lg:sr-only">To-Do</h1>
+      <h1 class="mb-4 text-3xl font-semibold tracking-tight lg:sr-only">To-Do</h1>
       <nav class="flex gap-1 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
         <button
           v-for="v in BUILTIN_VIEWS"
@@ -166,15 +174,14 @@ const navClass = (active: boolean) => [
       </div>
 
       <div class="mt-2 flex gap-2 lg:hidden">
-        <select
-          class="min-w-0 flex-1 rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-900"
-          aria-label="Pilih proyek"
-          :value="currentProject ? view : ''"
-          @change="go(($event.target as HTMLSelectElement).value as TaskView)"
-        >
-          <option value="" disabled>Proyek…</option>
-          <option v-for="p in projects" :key="p.id" :value="`project:${p.id}`">{{ p.name }}</option>
-        </select>
+        <UiSelect
+          v-model="projectPick"
+          class="min-w-0 flex-1"
+          label="Pilih proyek"
+          hide-label
+          placeholder="Proyek…"
+          :options="projects.map((p) => ({ value: `project:${p.id}`, label: p.name }))"
+        />
         <UiButton variant="secondary" @click="openProject(null)">+ Proyek</UiButton>
       </div>
     </aside>
