@@ -19,6 +19,13 @@ export const envSchema = z
       .int()
       .positive()
       .default(15 * 60),
+    /** Nilai `trust proxy` Express. Bawaan: alamat loopback dan jaringan privat (Docker). */
+    TRUST_PROXY: z.preprocess(
+      emptyToUndefined,
+      z.string().default('loopback, linklocal, uniquelocal'),
+    ),
+    /** Flag Secure cookie refresh: auto (ikut protokol permintaan), true, atau false. */
+    COOKIE_SECURE: z.enum(['auto', 'true', 'false']).default('auto'),
     /** Permintaan /auth per menit per IP (refresh: tiga kali lipat). */
     AUTH_RATE_LIMIT: z.coerce.number().int().positive().default(10),
     REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),

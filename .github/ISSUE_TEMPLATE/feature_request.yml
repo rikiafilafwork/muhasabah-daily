@@ -1,0 +1,21 @@
+name: Usulan fitur
+description: Ide untuk membuat Muhasabah Daily lebih bermanfaat.
+labels: [usulan]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Masalah atau kebutuhan
+      description: Apa yang ingin kamu capai dan kenapa sulit sekarang?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Usulan
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatif yang sudah dipertimbangkan

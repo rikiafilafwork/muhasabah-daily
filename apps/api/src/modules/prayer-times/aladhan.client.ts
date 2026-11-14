@@ -65,16 +65,42 @@ export class AladhanClient {
     url.searchParams.set('timezonestring', params.timezone);
     url.searchParams.set('iso8601', 'true');
 
-    let res: Response;
-    try {
-      res = await fetch(url, {
-        signal: AbortSignal.timeout(this.config.get('ALADHAN_TIMEOUT_MS')),
-        headers: { accept: 'application/json' },
-      });
-    } catch (err) {
-      throw new AladhanError(`AlAdhan tidak dapat dihubungi: ${(err as Error).message}`);
-    }
-    if (!res.ok) throw new AladhanError(`AlAdhan membalas ${res.status}`);
+    const res = await fetchWithRetry(
+      () =>
+        this.fetchImpl(url, {
+          signal: AbortSignal.timeout(this.config.get('ALADHAN_TIMEOUT_MS')),
+          headers: { accept: 'application/json' },
+        }),
+      RETRY_DELAY_MS,
+    );
     return mapAladhanResponse((await res.json()) as AladhanResponse);
   }
+
+  /** Bisa diganti di test. */
+  fetchImpl: typeof fetch = (...args) => fetch(...args);
+}
+
+const RETRY_DELAY_MS = 500;
+
+/**
+ * Satu kali coba ulang untuk galat jaringan dan 5xx (mis. DNS belum siap sesaat setelah
+ * container start). 4xx tidak diulang. Fungsi murni terhadap `doFetch`.
+ */
+export async function fetchWithRetry(
+  doFetch: () => Promise<Response>,
+  delayMs: number,
+): Promise<Response> {
+  let lastError = '';
+  for (let attempt = 0; attempt < 2; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, delayMs));
+    try {
+      const res = await doFetch();
+      if (res.ok) return res;
+      lastError = `AlAdhan membalas ${res.status}`;
+      if (res.status < 500) break;
+    } catch (err) {
+      lastError = `AlAdhan tidak dapat dihubungi: ${(err as Error).message}`;
+    }
+  }
+  throw new AladhanError(lastError);
 }

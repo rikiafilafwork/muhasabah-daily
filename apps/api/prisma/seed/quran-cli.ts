@@ -5,8 +5,10 @@
  *                 (`pnpm dev` harus berjalan). Menunggu sampai selesai dan menampilkan progres.
  *   --direct      Jalankan impor langsung di proses ini, tanpa API dan antrean.
  *   --fixture     Isi data uji kecil (3 surah) tanpa internet. Untuk test dan demo offline.
+ *   --if-empty    Lewati bila data lengkap sudah ada (dipakai entrypoint Docker).
  */
 import { PrismaClient } from '@prisma/client';
+import { AYAH_COUNT } from '@muhasabah/shared';
 import { Queue, QueueEvents } from 'bullmq';
 import { QUEUE_PREFIX, QUEUES, redisConnection } from '../../src/queue/connection';
 import { importQuran } from '../../src/modules/quran/quran-import';
@@ -51,6 +53,17 @@ async function viaQueue() {
 
 async function main() {
   const args = process.argv.slice(2);
+  if (args.includes('--if-empty')) {
+    const prisma = new PrismaClient();
+    try {
+      if ((await prisma.ayah.count()) >= AYAH_COUNT) {
+        console.log("Data Al-Qur'an sudah lengkap, impor dilewati.");
+        return;
+      }
+    } finally {
+      await prisma.$disconnect();
+    }
+  }
   if (args.includes('--fixture')) {
     const prisma = new PrismaClient();
     try {

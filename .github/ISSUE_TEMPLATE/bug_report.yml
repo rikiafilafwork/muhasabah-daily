@@ -1,0 +1,48 @@
+name: Laporan bug
+description: Sesuatu tidak berjalan sebagaimana mestinya.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: Apa yang terjadi?
+      description: Jelaskan singkat, termasuk pesan error yang muncul.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Langkah untuk mengulang
+      placeholder: |
+        1. Buka halaman …
+        2. Tekan …
+        3. Muncul …
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Yang diharapkan
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Cara menjalankan
+      options:
+        - docker compose up
+        - pnpm dev
+        - lainnya
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Versi atau commit
+      placeholder: v1.0.0 atau hash commit
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log (opsional)
+      description: Potongan log `docker compose logs api`. Jangan sertakan isi jurnal, kata sandi, atau kunci API.
+      render: shell

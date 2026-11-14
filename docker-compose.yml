@@ -1,6 +1,9 @@
-# Layanan lokal Muhasabah Daily.
-#   docker compose up -d db redis        # hanya basis data dan Redis (pengembangan)
-#   docker compose --profile full up     # semuanya di container (dirampungkan pada fase 6)
+# Muhasabah Daily: semua layanan.
+#
+#   docker compose up -d           # jalankan semuanya, lalu buka http://localhost:8080
+#   docker compose up -d db redis  # hanya basis data dan Redis (pengembangan dengan `pnpm dev`)
+#
+# `.env` opsional untuk mode container: secret JWT dibuat otomatis bila kosong.
 name: muhasabah-daily
 
 services:
@@ -12,7 +15,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-muhasabah}
       POSTGRES_DB: ${POSTGRES_DB:-muhasabah}
     ports:
-      - '5432:5432'
+      # Hanya dari mesin ini (untuk `pnpm dev`); tidak terbuka ke jaringan.
+      - '127.0.0.1:5432:5432'
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./docker/postgres-init.sql:/docker-entrypoint-initdb.d/10-test-db.sql:ro
@@ -27,7 +31,7 @@ services:
     restart: unless-stopped
     command: ['redis-server', '--appendonly', 'yes']
     ports:
-      - '6379:6379'
+      - '127.0.0.1:6379:6379'
     volumes:
       - redis-data:/data
     healthcheck:
@@ -37,36 +41,33 @@ services:
       retries: 10
 
   api:
-    profiles: ['full']
     build:
       context: .
       dockerfile: apps/api/Dockerfile
-    env_file: .env
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
     environment:
+      NODE_ENV: production
       DATABASE_URL: postgresql://${POSTGRES_USER:-muhasabah}:${POSTGRES_PASSWORD:-muhasabah}@db:5432/${POSTGRES_DB:-muhasabah}
       REDIS_URL: redis://redis:6379
-    ports:
-      - '3000:3000'
+      CORS_ORIGIN: ${PUBLIC_URL:-http://localhost:8080}
+    volumes:
+      - api-secrets:/app/secrets
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
-    healthcheck:
-      test: ['CMD', 'wget', '-qO-', 'http://localhost:3000/api/v1/health']
-      interval: 10s
-      timeout: 3s
-      retries: 5
 
   web:
-    profiles: ['full']
     build:
       context: .
       dockerfile: apps/web/Dockerfile
-    environment:
-      API_PROXY_TARGET: http://api:3000
+    restart: unless-stopped
     ports:
-      - '5173:5173'
+      - '${WEB_PORT:-8080}:80'
     depends_on:
       api:
         condition: service_healthy
@@ -74,3 +75,4 @@ services:
 volumes:
   db-data:
   redis-data:
+  api-secrets:

@@ -2,7 +2,7 @@
 
 Aplikasi produktivitas Muslim open source yang dijalankan di komputermu sendiri. Jadwal, to-do, habit, goals, fokus, dzikir, hafalan, jurnal, dan catatan kajian disusun di sekitar waktu sholat.
 
-> **v0.1.0** berisi jadwal, to-do, habit, goals, fokus, dan dzikir. Cabang utama sudah menambahkan **Hafidz**, **Jurnal dengan AI Polish**, dan **Catatan Kajian** (fase 5); lihat [CHANGELOG.md](CHANGELOG.md) dan [peta fase](ARCHITECTURE.md#16-pemetaan-ke-fase-pengerjaan).
+> **v1.0.0** — semua modul dari rancangan awal: waktu sholat, jadwal, to-do, habit, goals, fokus, dzikir, Hafidz, jurnal dengan AI Polish, dan catatan kajian. Lihat [CHANGELOG.md](CHANGELOG.md).
 
 ![Beranda: waktu sholat, fokus hari ini, habit, dzikir, dan agenda](docs/screenshots/beranda.png)
 
@@ -31,6 +31,17 @@ Aplikasi produktivitas Muslim open source yang dijalankan di komputermu sendiri.
 Vue 3 + Vite + Pinia + Tailwind · NestJS 11 + Prisma 6 · PostgreSQL 17 · Redis 7 · TypeScript di seluruh stack, skema validasi bersama dengan Zod. Detail di [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Menjalankan
+
+Cukup Docker (Compose v2.24+):
+
+```bash
+git clone <url-repositori> muhasabah-daily && cd muhasabah-daily
+docker compose up -d
+```
+
+Buka **http://localhost:8080**. Migrasi, data dasar, dan data Al-Qur'an disiapkan otomatis saat start pertama; secret dibuat sendiri bila `.env` tidak ada. Bisa dipasang sebagai aplikasi (PWA) dari browser. Konfigurasi, akses dari ponsel, HTTPS, pencadangan, dan pembaruan dijelaskan di **[docs/self-hosting.md](docs/self-hosting.md)**.
+
+## Pengembangan
 
 Butuh Node 22+ (disarankan 24), pnpm 11, dan Docker.
 

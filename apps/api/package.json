@@ -1,6 +1,6 @@
 {
   "name": "api",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "build": "nest build",
@@ -16,7 +16,8 @@
     "db:deploy": "dotenv run -q -f ../../.env -- prisma migrate deploy",
     "postinstall": "prisma generate",
     "seed:demo": "dotenv run -q -f ../../.env -- ts-node --transpile-only prisma/seed/demo-cli.ts",
-    "seed:quran": "dotenv run -q -f ../../.env -- ts-node --transpile-only prisma/seed/quran-cli.ts"
+    "seed:quran": "dotenv run -q -f ../../.env -- ts-node --transpile-only prisma/seed/quran-cli.ts",
+    "build:seed": "tsc -p tsconfig.seed.json"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",

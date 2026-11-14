@@ -12,7 +12,8 @@ export function setupApp(app: INestApplication): void {
   const express = app as NestExpressApplication;
 
   app.setGlobalPrefix(API_PREFIX);
-  express.set('trust proxy', 'loopback');
+  // Percayai proxy di jaringan lokal/Docker (mis. nginx container web) untuk IP klien dan protokol.
+  express.set('trust proxy', config.get('TRUST_PROXY'));
   // Cukup untuk dokumen catatan kajian (maks. 200 kB JSON, lihat LECTURE_NOTE_MAX_BYTES).
   express.useBodyParser('json', { limit: '300kb' });
   app.use(helmet());

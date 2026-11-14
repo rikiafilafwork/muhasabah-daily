@@ -4,7 +4,7 @@ Dokumen ini menjelaskan rancangan teknis Muhasabah Daily, aplikasi produktivitas
 
 - Versi dokumen: 0.1 (draft, 11 November 2026)
 - Status keputusan: stack final Vue 3 + NestJS, tanpa hosting, tanpa pembayaran, AI opsional
-- Status implementasi: fase 0–5 selesai (rilis v0.1.0 berisi fase 0–4; lihat bagian 16)
+- Status implementasi: fase 0–6 selesai (lihat bagian 16)
 
 ## 1. Tujuan dan batasan
 
@@ -419,28 +419,41 @@ Semua konfigurasi lewat variabel lingkungan, divalidasi dengan zod saat aplikasi
 
 ## 10. Menjalankan lokal
 
-`docker-compose.yml` berisi empat layanan:
+`docker compose up -d` menjalankan semuanya; panduan lengkap ada di [`docs/self-hosting.md`](docs/self-hosting.md).
 
-| Layanan | Image / sumber                                    | Port |
-| ------- | ------------------------------------------------- | ---- |
-| `web`   | build `apps/web` (dev server Vite), profil `full` | 5173 |
-| `api`   | build `apps/api`, profil `full`                   | 3000 |
-| `db`    | `postgres:17-alpine`                              | 5432 |
-| `redis` | `redis:7-alpine`                                  | 6379 |
+| Layanan | Image / sumber                                                                   | Port host                           |
+| ------- | -------------------------------------------------------------------------------- | ----------------------------------- |
+| `web`   | build `apps/web`: hasil `vite build` disajikan nginx; `/api` diteruskan ke `api` | `${WEB_PORT:-8080}`                 |
+| `api`   | build `apps/api` (produksi)                                                      | tidak dibuka; diakses lewat `web`   |
+| `db`    | `postgres:17-alpine`                                                             | `127.0.0.1:5432` (untuk `pnpm dev`) |
+| `redis` | `redis:7-alpine`                                                                 | `127.0.0.1:6379`                    |
 
-Alur awal:
+Saat container `api` start (`apps/api/docker/entrypoint.sh`):
+
+1. Secret JWT yang kosong dibuat sekali dan disimpan di volume `api-secrets`.
+2. `prisma migrate deploy`.
+3. Seed dasar (template habit, dzikir); tanpa internet memakai teks bawaan.
+4. Impor Al-Qur'an bila belum lengkap (`--direct --if-empty`); kegagalan tidak menghentikan API. Matikan dengan `SEED_QURAN=false`.
+
+Seeder dikompilasi ke `dist-seed` (`tsconfig.seed.json`), sehingga image produksi tidak memerlukan ts-node.
+
+Cookie refresh memakai `COOKIE_SECURE=auto`: bertanda `Secure` hanya bila permintaan HTTPS (termasuk lewat proxy dengan `X-Forwarded-Proto`, `TRUST_PROXY` mempercayai jaringan lokal/Docker). Dengan begitu login berfungsi lewat `http://IP-lokal` dan tetap aman di balik HTTPS.
+
+Pengembangan:
 
 ```bash
 cp .env.example .env              # isi JWT_ACCESS_SECRET dan JWT_REFRESH_SECRET
 docker compose up -d db redis
 pnpm install
-pnpm --filter api db:deploy       # migrasi
-pnpm --filter api seed            # habit_templates dan dhikr_items (fase 2–3)
-pnpm --filter api seed:quran      # data Al-Qur'an untuk Hafidz dan Kajian (butuh API berjalan, atau tambah -- --direct)
-pnpm dev                          # web dan api
+pnpm --filter api db:deploy
+pnpm --filter api seed
+pnpm --filter api seed:quran      # butuh API berjalan, atau tambah -- --direct
+pnpm dev                          # web :5173, API :3000
 ```
 
-Alternatif: `docker compose --profile full up --build` menjalankan semuanya (API menjalankan migrasi saat start). Target akhir (fase 6): `docker compose up` saja sudah menjalankan semuanya, termasuk seed dasar.
+### 10.1 PWA
+
+Web memakai `vite-plugin-pwa`: manifest, ikon (dibuat dari `favicon.svg` oleh `pnpm --filter web icons`), dan service worker yang mem-precache kerangka aplikasi. Respons `/api` tidak di-cache karena berisi data pribadi dan harus selalu terbaru. Hitungan dzikir yang dibuat saat offline tetap diantre (8.3c). Service worker hanya aktif di build produksi.
 
 ## 11. Pengujian
 
@@ -468,7 +481,7 @@ Pada setiap pull request (`.github/workflows/ci.yml`):
 4. Build `web` dan `api`.
 5. Pindai rahasia (gitleaks) dan audit dependensi.
 
-E2E Playwright dijalankan pada push ke cabang utama dan tag rilis. Tidak ada langkah deploy.
+Job `docker` membangun image API dan web (tanpa push) untuk memastikan `docker compose up` tetap berjalan. E2E Playwright dijalankan pada push ke cabang utama dan tag rilis. Tidak ada langkah deploy.
 
 ## 13. Keamanan dan privasi
 
@@ -503,6 +516,8 @@ E2E Playwright dijalankan pada push ke cabang utama dan tag rilis. Tidak ada lan
 | 10  | Worker BullMQ menyatu dengan proses API (v0.1)                   | Lebih sederhana untuk dijalankan lokal                       | Dapat dipisah ke entry point sendiri pada fase 6                       |
 | 11  | AI Polish lewat antarmuka `AiProvider`, Anthropic sebagai bawaan | Satu implementasi teruji, penyedia lain cukup menambah kelas | Hanya Anthropic yang tersedia sekarang; model dan kunci milik pengguna |
 | 12  | Data Al-Qur'an diimpor lewat antrean `seed`                      | Sesuai rancangan worker; progres terlihat                    | Butuh API berjalan, atau mode `--direct`                               |
+| 13  | `docker compose up` menyiapkan semuanya, secret dibuat otomatis  | Satu perintah untuk pengguna awam                            | Secret tersimpan di volume; cadangkan bersama data bila perlu          |
+| 14  | Web produksi disajikan nginx yang meneruskan `/api`              | Satu origin: cookie refresh dan CORS sederhana               | Port API tidak dibuka ke host                                          |
 
 ## 16. Pemetaan ke fase pengerjaan
 
@@ -514,7 +529,7 @@ E2E Playwright dijalankan pada push ke cabang utama dan tag rilis. Tidak ada lan
 | 3    | `focus`, `dhikr`, seeder `dhikr_items`, timer dan counter di web                  | selesai |
 | 4    | Poles UI, data contoh, tangkapan layar, tag v0.1                                  | selesai |
 | 5    | `quran`, `memorization`, `journal` + AI Polish, `lecture-notes`, seeder Al-Qur'an | selesai |
-| 6    | Docker Compose penuh, dokumentasi, template issue/PR, PWA opsional, tag v1.0      |         |
+| 6    | Docker Compose penuh, dokumentasi, template issue/PR, PWA opsional, tag v1.0      | selesai |
 
 ## 17. Pertanyaan terbuka
 
@@ -523,4 +538,6 @@ E2E Playwright dijalankan pada push ke cabang utama dan tag rilis. Tidak ada lan
 - ~~Pemilihan final penyedia AI dan model default.~~ Diputuskan: Anthropic di balik antarmuka umum (ADR 11).
 - Nama surah dan artinya masih dari AlQuran Cloud (ejaan latin dan arti berbahasa Inggris); perlu sumber nama berbahasa Indonesia.
 - Sumber data final dan lisensinya (lihat `DATA_SOURCES.md`).
+- Saat offline, membuka ulang aplikasi menampilkan halaman masuk karena sesi dipulihkan lewat `/auth/refresh`; halaman yang sudah terbuka tetap berjalan (mis. penghitung dzikir). Opsi: tandai sesi "offline" saat refresh gagal karena jaringan, bukan 401.
+- Pengingat sholat dan agenda (antrean `reminders`) belum dibuat; butuh Web Push (kunci VAPID) atau notifikasi lokal.
 - Refresh antar-tab diserialkan di klien dengan Web Locks API agar dua tab tidak mengirim token yang sama (yang akan dianggap pemakaian ulang). Browser tanpa Web Locks masih bisa mengalami ini; opsi tambahan: masa tenggang beberapa detik di server untuk token yang baru dirotasi.

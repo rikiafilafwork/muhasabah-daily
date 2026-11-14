@@ -22,7 +22,7 @@ async function bootstrap() {
       app,
       new DocumentBuilder()
         .setTitle('Muhasabah Daily API')
-        .setVersion('0.1.0')
+        .setVersion('1.0.0')
         .addBearerAuth()
         .build(),
     );

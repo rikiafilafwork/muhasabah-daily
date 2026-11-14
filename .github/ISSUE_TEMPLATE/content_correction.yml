@@ -1,0 +1,49 @@
+name: Koreksi konten keagamaan
+description: Teks dzikir, rujukan hadis/ayat, terjemah, atau jumlah bacaan yang perlu diperbaiki.
+labels: [konten]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Terima kasih sudah membantu menjaga ketepatan konten. Sertakan sumber yang bisa diperiksa
+        (nama kitab, nomor hadis, edisi/penerbit). Lihat juga `DATA_SOURCES.md`.
+  - type: input
+    id: item
+    attributes:
+      label: Konten yang dimaksud
+      placeholder: mis. Dzikir pagi — Sayyidul Istighfar, atau habit "Sholat Dhuha"
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Jenis koreksi
+      multiple: true
+      options:
+        - Teks Arab
+        - Latin
+        - Terjemah
+        - Rujukan (nomor hadis/ayat)
+        - Jumlah bacaan
+        - Lainnya
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: Yang tertulis sekarang
+    validations:
+      required: true
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Usulan perbaikan
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Sumber
+      description: Kitab, nomor hadis, halaman, atau tautan ke sumber terpercaya.
+    validations:
+      required: true

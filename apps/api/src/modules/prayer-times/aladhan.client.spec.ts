@@ -1,4 +1,4 @@
-import { AladhanError, mapAladhanResponse } from './aladhan.client';
+import { AladhanError, fetchWithRetry, mapAladhanResponse } from './aladhan.client';
 
 const sample = {
   code: 200,
@@ -40,5 +40,30 @@ describe('mapAladhanResponse', () => {
         data: { timings: { ...sample.data.timings, Asr: '15:05' } },
       }),
     ).toThrow(AladhanError);
+  });
+});
+
+describe('fetchWithRetry', () => {
+  const ok = () => new Response('{}', { status: 200 });
+  it('mengulang sekali setelah galat jaringan atau 5xx', async () => {
+    const net = jest
+      .fn()
+      .mockRejectedValueOnce(new TypeError('fetch failed'))
+      .mockResolvedValue(ok());
+    await expect(fetchWithRetry(net, 0)).resolves.toBeInstanceOf(Response);
+    expect(net).toHaveBeenCalledTimes(2);
+    const server = jest
+      .fn()
+      .mockResolvedValueOnce(new Response('', { status: 502 }))
+      .mockResolvedValue(ok());
+    await expect(fetchWithRetry(server, 0)).resolves.toBeInstanceOf(Response);
+  });
+  it('tidak mengulang 4xx dan menyerah setelah dua kali gagal', async () => {
+    const bad = jest.fn().mockResolvedValue(new Response('', { status: 400 }));
+    await expect(fetchWithRetry(bad, 0)).rejects.toThrow('AlAdhan membalas 400');
+    expect(bad).toHaveBeenCalledTimes(1);
+    const down = jest.fn().mockRejectedValue(new TypeError('fetch failed'));
+    await expect(fetchWithRetry(down, 0)).rejects.toBeInstanceOf(AladhanError);
+    expect(down).toHaveBeenCalledTimes(2);
   });
 });

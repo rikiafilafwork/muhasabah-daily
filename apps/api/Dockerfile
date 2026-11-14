@@ -8,6 +8,7 @@ COPY . .
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter @muhasabah/shared build \
   && pnpm --filter api build \
+  && pnpm --filter api build:seed \
   && pnpm --filter api deploy --prod --legacy /out \
   && cd /out && ./node_modules/.bin/prisma generate \
   # Ganti symlink paket workspace dengan salinan nyata (dist + package.json).
@@ -20,7 +21,12 @@ ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=build /out ./
 COPY --from=build /repo/apps/api/dist ./dist
+COPY --from=build /repo/apps/api/dist-seed ./dist-seed
+COPY --chmod=755 apps/api/docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN mkdir -p /app/secrets && chown node:node /app/secrets
 USER node
 EXPOSE 3000
-# Migrasi dijalankan saat start agar `docker compose --profile full up` langsung siap.
-CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && node dist/main.js"]
+HEALTHCHECK --interval=10s --timeout=3s --start-period=90s --retries=5 \
+  CMD wget -qO- http://localhost:3000/api/v1/health || exit 1
+# Secret, migrasi, seed dasar, dan impor Al-Qur'an dijalankan saat start (docker/entrypoint.sh).
+ENTRYPOINT ["entrypoint.sh"]
