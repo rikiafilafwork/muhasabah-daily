@@ -2,7 +2,7 @@
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/id-ID/1.1.0/) dan versi mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 
-## [Belum dirilis]
+## [1.1.0] — 2026-11-14
 
 ### Diubah
 
@@ -10,6 +10,7 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/id-ID/1.1.0/) dan
 - **Beranda:** sapaan besar, tanggal Masehi dan Hijriah (Umm al-Qura, bisa selisih sehari dengan penetapan resmi), pintasan cepat, dan kartu hitung mundur sholat yang diperbarui.
 - **Halaman masuk/daftar:** tata letak terbelah dengan panel sambutan di layar lebar.
 - **Dialog** tampil sebagai lembar dari bawah di layar kecil.
+- **Tangkapan layar README** diperbarui ke tampilan baru.
 - **Select** diganti listbox kustom yang mengikuti tema (termasuk mode gelap), dengan kolom cari untuk daftar panjang dan dukungan keyboard.
 
 ### Ditambahkan
@@ -73,5 +74,6 @@ Rilis pertama: fase 0–4 dari [peta fase](ARCHITECTURE.md#16-pemetaan-ke-fase-p
 
 - Teks dzikir dari hadis dan rujukan library habit perlu ditinjau pengelola; lihat [DATA_SOURCES.md](DATA_SOURCES.md).
 
+[1.1.0]: ../../releases/tag/v1.1.0
 [1.0.0]: ../../releases/tag/v1.0.0
 [0.1.0]: ../../releases/tag/v0.1.0

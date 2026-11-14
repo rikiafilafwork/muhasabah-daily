@@ -1,6 +1,6 @@
 {
   "name": "@muhasabah/shared",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Tipe, enum, dan skema validasi yang dipakai web dan api.",
   "main": "./dist/cjs/index.js",

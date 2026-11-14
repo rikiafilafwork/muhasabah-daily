@@ -2,7 +2,7 @@
 
 Aplikasi produktivitas Muslim open source yang dijalankan di komputermu sendiri. Jadwal, to-do, habit, goals, fokus, dzikir, hafalan, jurnal, dan catatan kajian disusun di sekitar waktu sholat.
 
-> **v1.0.0** — semua modul dari rancangan awal: waktu sholat, jadwal, to-do, habit, goals, fokus, dzikir, Hafidz, jurnal dengan AI Polish, dan catatan kajian. Lihat [CHANGELOG.md](CHANGELOG.md).
+> **v1.1.0** — tampilan baru bergaya web personal: navigasi header di desktop, tab bar di ponsel, dan tombol mode gelap. Lihat [CHANGELOG.md](CHANGELOG.md).
 
 ![Beranda: waktu sholat, fokus hari ini, habit, dzikir, dan agenda](docs/screenshots/beranda.png)
 
@@ -18,7 +18,7 @@ Aplikasi produktivitas Muslim open source yang dijalankan di komputermu sendiri.
 - **Hafidz**: rencana hafalan dengan tahapan tikrar (dengar, baca sendiri, sambung) dan pemutar murottal per ayat.
 - **Jurnal** harian dengan simpan otomatis dan **AI Polish** opsional (Claude, kunci API milikmu) yang merapikan ejaan tanpa menimpa teks asli.
 - **Catatan Kajian** dengan editor teks kaya dan rujukan ayat yang menampilkan teks Arab dan terjemah.
-- Mode gelap, tampilan ponsel, dan audit aksesibilitas WCAG 2.1 AA otomatis di setiap halaman.
+- Tombol mode gelap (terang/gelap/ikuti sistem) di header, tampilan ponsel dengan tab bar bawah, dan audit aksesibilitas WCAG 2.1 AA otomatis di setiap halaman.
 
 | Jadwal hari                                                          | Habit dan insight                                         | Dzikir (gelap)                                                 |
 | -------------------------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------- |
@@ -88,18 +88,18 @@ docker compose --profile full up --build
 
 ## Skrip
 
-| Perintah                                     | Fungsi                                                                                |
-| -------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `pnpm dev`                                   | Jalankan shared (watch), API, dan web                                                 |
-| `pnpm lint` / `pnpm format`                  | ESLint / Prettier                                                                     |
-| `pnpm typecheck`                             | Cek tipe semua paket                                                                  |
-| `pnpm test`                                  | Test unit dan integrasi (butuh `db` dan `redis` berjalan)                             |
-| `pnpm test:e2e`                              | E2E Playwright (pertama kali: `pnpm --filter web exec playwright install chromium`)   |
-| `pnpm build`                                 | Build produksi API dan web                                                            |
-| `pnpm --filter api seed:demo`                | Buat ulang akun demo beserta datanya                                                  |
-| `pnpm --filter api seed:quran`               | Impor data Al-Qur'an lewat antrean (`-- --direct` tanpa API, `-- --fixture` data uji) |
-| `pnpm --filter web screenshots`              | Perbarui `docs/screenshots/` (butuh `pnpm dev` dan `seed:demo`)                       |
-| `pnpm --filter api db:migrate --name <nama>` | Buat migrasi baru                                                                     |
+| Perintah                                     | Fungsi                                                                                   |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `pnpm dev`                                   | Jalankan shared (watch), API, dan web                                                    |
+| `pnpm lint` / `pnpm format`                  | ESLint / Prettier                                                                        |
+| `pnpm typecheck`                             | Cek tipe semua paket                                                                     |
+| `pnpm test`                                  | Test unit dan integrasi (butuh `db` dan `redis` berjalan)                                |
+| `pnpm test:e2e`                              | E2E Playwright (pertama kali: `pnpm --filter web exec playwright install chromium`)      |
+| `pnpm build`                                 | Build produksi API dan web                                                               |
+| `pnpm --filter api seed:demo`                | Buat ulang akun demo beserta datanya                                                     |
+| `pnpm --filter api seed:quran`               | Impor data Al-Qur'an lewat antrean (`-- --direct` tanpa API, `-- --fixture` data uji)    |
+| `pnpm --filter web screenshots`              | Perbarui `docs/screenshots/` (butuh `pnpm dev` dan `seed:demo`; `BASE_URL` untuk Docker) |
+| `pnpm --filter api db:migrate --name <nama>` | Buat migrasi baru                                                                        |
 
 ## Struktur
 
