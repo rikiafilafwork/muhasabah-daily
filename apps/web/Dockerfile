@@ -1,6 +1,6 @@
 # Image web: build produksi Vite disajikan nginx. Dibangun dari root repo:
 #   docker build -f apps/web/Dockerfile .
-FROM node:24-alpine AS build
+FROM node:25-alpine AS build
 RUN npm install -g pnpm@11.21.0
 WORKDIR /repo
 COPY . .
