@@ -46,7 +46,7 @@ importers:
         version: link:../../packages/shared
       '@nestjs/bullmq':
         specifier: ^11.0.5
-        version: 11.0.5(@nestjs/common@11.2.9(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.9)(bullmq@6.7.4(ioredis@6.0.0(supports-color@8.1.1)))
+        version: 11.0.5(@nestjs/common@11.2.9(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.9)(bullmq@6.7.5(ioredis@6.0.0(supports-color@8.1.1)))
       '@nestjs/common':
         specifier: ^11.2.9
         version: 11.2.9(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1)
@@ -75,8 +75,8 @@ importers:
         specifier: ^0.45.2
         version: 0.45.2
       bullmq:
-        specifier: ^6.7.4
-        version: 6.7.4(ioredis@6.0.0(supports-color@8.1.1))
+        specifier: ^6.7.5
+        version: 6.7.5(ioredis@6.0.0(supports-color@8.1.1))
       cookie-parser:
         specifier: ^1.4.7
         version: 1.4.7
@@ -2944,8 +2944,8 @@ packages:
   buffer@5.7.1:
     resolution: {integrity: sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==}
 
-  bullmq@6.7.4:
-    resolution: {integrity: sha512-wSNRD2kUE+sqNV42MQLiwtOPgwJmhiZlZ0X5zYBYXRkmok6YKJMf9IXfYLCu7DI4/txNTBlT2g2NHfRW/PxCvw==}
+  bullmq@6.7.5:
+    resolution: {integrity: sha512-6Cd68gsM28pkzlAJQ1AVu2tfrqmcpgmfHUN8etilSUnzdAz77JJa5KmjsbRNtjSmIKsbYRflY1vcH0h8SIqECg==}
     engines: {node: '>=14.18.0'}
     peerDependencies:
       bullmq-otel: '>=2.0.0'
@@ -7416,12 +7416,12 @@ snapshots:
       '@nestjs/core': 11.2.9(@nestjs/common@11.2.9(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/platform-express@11.2.9)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       tslib: 2.8.1
 
-  '@nestjs/bullmq@11.0.5(@nestjs/common@11.2.9(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.9)(bullmq@6.7.4(ioredis@6.0.0(supports-color@8.1.1)))':
+  '@nestjs/bullmq@11.0.5(@nestjs/common@11.2.9(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.9)(bullmq@6.7.5(ioredis@6.0.0(supports-color@8.1.1)))':
     dependencies:
       '@nestjs/bull-shared': 11.0.5(@nestjs/common@11.2.9(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.9)
       '@nestjs/common': 11.2.9(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1)
       '@nestjs/core': 11.2.9(@nestjs/common@11.2.9(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/platform-express@11.2.9)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      bullmq: 6.7.4(ioredis@6.0.0(supports-color@8.1.1))
+      bullmq: 6.7.5(ioredis@6.0.0(supports-color@8.1.1))
       tslib: 2.8.1
 
   '@nestjs/cli@11.0.24(@types/node@24.19.2)(lightningcss@1.33.0)(postcss@8.5.32)(prettier@3.10.0)(uglify-js@3.19.3)':
@@ -8970,7 +8970,7 @@ snapshots:
       base64-js: 1.5.1
       ieee754: 1.2.1
 
-  bullmq@6.7.4(ioredis@6.0.0(supports-color@8.1.1)):
+  bullmq@6.7.5(ioredis@6.0.0(supports-color@8.1.1)):
     dependencies:
       cron-parser: 5.10.4
       msgpackr: 2.1.4
