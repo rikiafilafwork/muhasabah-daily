@@ -14,6 +14,7 @@ import {
   useTheme,
   useZodForm,
 } from '@/shared';
+import { ReminderSettingsCard } from '@/features/reminders';
 import { profileApi } from '../api';
 
 const session = useSessionStore();
@@ -227,6 +228,8 @@ async function deleteAccount() {
         <UiButton type="submit" :loading="submitting">Simpan pengaturan</UiButton>
       </div>
     </form>
+
+    <ReminderSettingsCard />
 
     <UiCard
       title="Hapus akun"

@@ -1,5 +1,5 @@
 import type { User } from '../../generated/prisma/client';
-import type { Profile } from '@muhasabah/shared';
+import { OBLIGATORY_PRAYERS, type Profile } from '@muhasabah/shared';
 
 /** Memetakan baris User ke Profile publik. Tidak pernah menyertakan passwordHash. */
 export function toProfile(user: User): Profile {
@@ -12,6 +12,7 @@ export function toProfile(user: User): Profile {
     longitude: user.longitude,
     timezone: user.timezone,
     theme: user.theme,
+    prayerReminders: OBLIGATORY_PRAYERS.filter((p) => user.prayerReminders.includes(p)),
     createdAt: user.createdAt.toISOString(),
   };
 }

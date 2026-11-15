@@ -8,6 +8,8 @@ export default tseslint.config(
   {
     ignores: [
       '**/dist/**',
+      '**/dist-seed/**',
+      '**/dist-e2e/**',
       'apps/api/src/generated/**',
       '**/coverage/**',
       '**/node_modules/**',

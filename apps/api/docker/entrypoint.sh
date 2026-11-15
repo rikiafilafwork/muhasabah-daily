@@ -19,6 +19,20 @@ for name in JWT_ACCESS_SECRET JWT_REFRESH_SECRET; do
   fi
 done
 
+# 1b) Kunci VAPID untuk Web Push (pengingat). Dibuat sekali bila kosong, disimpan di volume;
+#     mengganti kunci membuat semua perangkat harus mengaktifkan notifikasi ulang.
+if [ -z "${VAPID_PUBLIC_KEY:-}" ] || [ -z "${VAPID_PRIVATE_KEY:-}" ]; then
+  vapid="$SECRETS_DIR/vapid.json"
+  if [ ! -s "$vapid" ]; then
+    umask 077
+    node -e "process.stdout.write(JSON.stringify(require('web-push').generateVAPIDKeys()))" > "$vapid"
+    echo "Kunci VAPID dibuat dan disimpan di volume."
+  fi
+  VAPID_PUBLIC_KEY="$(node -p "require('$vapid').publicKey")"
+  VAPID_PRIVATE_KEY="$(node -p "require('$vapid').privateKey")"
+  export VAPID_PUBLIC_KEY VAPID_PRIVATE_KEY
+fi
+
 # 2) Migrasi basis data.
 ./node_modules/.bin/prisma migrate deploy
 

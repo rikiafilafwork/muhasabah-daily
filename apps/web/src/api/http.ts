@@ -17,4 +17,4 @@ export const http = createApiClient({
   onSessionExpired: () => sessionBridge.onSessionExpired(),
 });
 
-export { ApiError } from './client';
+export { ApiError, isOfflineError, OFFLINE_CODE, type RefreshResult } from './client';

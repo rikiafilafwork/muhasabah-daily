@@ -8,5 +8,6 @@ import { PrayerTimesService } from './prayer-times.service';
   imports: [UsersModule],
   controllers: [PrayerTimesController],
   providers: [PrayerTimesService, AladhanClient],
+  exports: [PrayerTimesService],
 })
 export class PrayerTimesModule {}

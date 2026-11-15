@@ -15,6 +15,10 @@ export class AppConfig {
     return this.get('NODE_ENV') === 'production';
   }
 
+  get pushEnabled(): boolean {
+    return Boolean(this.get('VAPID_PUBLIC_KEY') && this.get('VAPID_PRIVATE_KEY'));
+  }
+
   get aiEnabled(): boolean {
     return Boolean(this.get('AI_PROVIDER') && this.get('AI_API_KEY'));
   }

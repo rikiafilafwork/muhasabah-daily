@@ -2,13 +2,15 @@
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useSessionStore } from '@/features/auth';
-import { UiIcon } from '@/shared';
+import { UiIcon, useOnline } from '@/shared';
 import MoreSheet from './components/MoreSheet.vue';
 import PopoverMenu from './components/PopoverMenu.vue';
 import ThemeToggle from './components/ThemeToggle.vue';
 import { DESKTOP_MORE, DESKTOP_PRIMARY, isActive, MOBILE_TABS, SETTINGS_ICON } from './navigation';
 
 const session = useSessionStore();
+const online = useOnline();
+const showOffline = computed(() => !online.value || session.offline);
 const router = useRouter();
 const route = useRoute();
 const sheetOpen = ref(false);
@@ -167,6 +169,21 @@ async function logout() {
       class="relative mx-auto max-w-6xl px-4 pt-6 pb-28 sm:px-6 lg:pt-10 lg:pb-16"
       tabindex="-1"
     >
+      <div
+        v-if="showOffline"
+        role="status"
+        class="mb-6 flex items-start gap-3 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-100"
+      >
+        <UiIcon
+          path="M3 3l18 18M8.5 16.4a5 5 0 0 1 7 0M5 12.9a10 10 0 0 1 4.2-2.5M14.8 10.4A10 10 0 0 1 19 12.9M2 9.3a15 15 0 0 1 4.3-2.6M11 5.1a15 15 0 0 1 11 4.2M12 20h.01"
+          class="mt-0.5 size-5 shrink-0"
+        />
+        <p>
+          <strong class="font-semibold">Sedang offline.</strong>
+          Menampilkan data terakhir yang tersimpan di perangkat ini. Perubahan belum bisa disimpan
+          sampai tersambung lagi.
+        </p>
+      </div>
       <RouterView />
     </main>
 

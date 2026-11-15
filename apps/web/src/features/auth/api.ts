@@ -6,5 +6,5 @@ export const authApi = {
     http.post<AuthResponse>('/auth/register', input, { auth: false }),
   login: (input: LoginInput) => http.post<AuthResponse>('/auth/login', input, { auth: false }),
   logout: () => http.post<void>('/auth/logout', undefined, { auth: false }),
-  refresh: () => http.refresh(),
+  refresh: () => http.refreshSession(),
 };

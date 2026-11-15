@@ -10,8 +10,8 @@ export default defineConfig({
   plugins: [
     vue(),
     tailwindcss(),
-    // PWA: bisa dipasang, kerangka aplikasi tersedia offline. Respons API tidak di-cache
-    // (data pribadi dan harus selalu terbaru); hitungan dzikir offline ditangani antreannya sendiri.
+    // PWA: bisa dipasang, kerangka aplikasi dan data terakhir tersedia offline (baca saja);
+    // hitungan dzikir offline ditangani antreannya sendiri.
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'script-defer',
@@ -38,12 +38,33 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // Ambil alih halaman sejak kunjungan pertama agar data langsung tersimpan untuk offline.
+        clientsClaim: true,
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//],
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         // Tangkapan layar landing page tidak perlu ikut cache offline.
         globIgnores: ['landing/**'],
-        runtimeCaching: [],
+        // Notifikasi Web Push (pengingat sholat dan agenda).
+        importScripts: ['/push-sw.js'],
+        runtimeCaching: [
+          {
+            // Mode offline: GET data API memakai jaringan dulu, cache bila gagal. Cache dihapus
+            // saat keluar/masuk akun (features/auth/stores/offline-snapshot.ts).
+            urlPattern: ({ url, request, sameOrigin }) =>
+              sameOrigin &&
+              request.method === 'GET' &&
+              url.pathname.startsWith('/api/v1/') &&
+              !/^\/api\/v1\/(auth|push|health)(\/|$)/.test(url.pathname),
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-data',
+              networkTimeoutSeconds: 8,
+              expiration: { maxEntries: 400, maxAgeSeconds: 30 * 24 * 3600 },
+              cacheableResponse: { statuses: [200] },
+            },
+          },
+        ],
       },
     }),
   ],

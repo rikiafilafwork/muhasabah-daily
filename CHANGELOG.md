@@ -4,13 +4,16 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/id-ID/1.1.0/) dan
 
 ## [Belum dirilis]
 
-### Diubah
-
-- **Prisma 7:** generator `prisma-client` (format CommonJS) dengan klien yang dibuat ke `apps/api/src/generated/prisma`, koneksi lewat driver adapter `@prisma/adapter-pg`, dan URL basis data dipindah dari skema ke `apps/api/prisma.config.ts`. Sekaligus menghilangkan kerentanan `deepmerge-ts` yang dibawa Prisma 6.
-
 ### Ditambahkan
 
+- **Pengingat lewat notifikasi (Web Push):** notifikasi saat waktu sholat masuk (pilih per sholat di Pengaturan) dan sebelum agenda dimulai (saat mulai sampai 1 hari sebelumnya, diatur per agenda). Kunci VAPID dibuat otomatis di mode Docker; tombol notifikasi tes; perangkat berhenti menerima notifikasi saat keluar akun. Butuh HTTPS atau localhost.
+- **Mode offline (baca saja):** aplikasi yang pernah dibuka bisa dibuka lagi tanpa koneksi dengan data terakhir, tanpa login ulang, dengan banner "Sedang offline". Perubahan ditolak dengan pesan jelas sampai tersambung; data tersimpan dihapus saat keluar akun.
 - **Landing page** di `/welcome` untuk pengunjung yang belum masuk: hero dengan tangkapan layar, daftar fitur, sorotan jadwal/habit/dzikir, penjelasan privasi, dan perintah instalasi Docker. Membuka `/` tanpa sesi kini diarahkan ke landing page; pengguna yang sudah masuk tetap ke Beranda.
+
+### Diubah
+
+- Server yang sedang mulai ulang (5xx) atau koneksi putus saat memperbarui sesi tidak lagi membuat pengguna keluar.
+- **Prisma 7:** generator `prisma-client` (format CommonJS) dengan klien yang dibuat ke `apps/api/src/generated/prisma`, koneksi lewat driver adapter `@prisma/adapter-pg`, dan URL basis data dipindah dari skema ke `apps/api/prisma.config.ts`. Sekaligus menghilangkan kerentanan `deepmerge-ts` yang dibawa Prisma 6.
 
 ## [1.1.0] — 2026-11-14
 

@@ -3,6 +3,8 @@ import { reactive, ref, watch } from 'vue';
 import {
   addDays,
   createEventSchema,
+  EVENT_REMINDER_MINUTES,
+  eventReminderLabel,
   toLocalDate,
   toLocalTime,
   zonedTimeToUtc,
@@ -15,6 +17,7 @@ import {
   UiColorPicker,
   UiDialog,
   UiInput,
+  UiSelect,
   UiTextarea,
   useZodForm,
 } from '@/shared';
@@ -34,7 +37,12 @@ const form = reactive({
   endDate: '',
   endTime: '10:00',
   color: 'emerald' as Color,
+  reminder: 'none',
 });
+const reminderOptions = [
+  { value: 'none', label: eventReminderLabel(null) },
+  ...EVENT_REMINDER_MINUTES.map((m) => ({ value: String(m), label: eventReminderLabel(m) })),
+];
 const { errors, formError, submitting, submit } = useZodForm(createEventSchema);
 const deleting = ref(false);
 
@@ -47,6 +55,7 @@ watch(open, (v) => {
   form.description = e?.description ?? '';
   form.allDay = e?.allDay ?? false;
   form.color = e?.color ?? 'emerald';
+  form.reminder = e?.reminderMinutes == null ? 'none' : String(e.reminderMinutes);
   if (e) {
     const start = new Date(e.startAt);
     // Akhir sepanjang hari bersifat eksklusif; tampilkan tanggal terakhirnya.
@@ -85,6 +94,7 @@ function onSubmit() {
     description: form.description.trim() || null,
     allDay: form.allDay,
     color: form.color,
+    reminderMinutes: form.reminder === 'none' ? null : Number(form.reminder),
     startAt: Number.isNaN(startAt.getTime()) ? '' : startAt.toISOString(),
     endAt: Number.isNaN(endAt.getTime()) ? '' : endAt.toISOString(),
   };
@@ -137,6 +147,7 @@ async function onDelete() {
         :rows="2"
         :error="errors.description"
       />
+      <UiSelect v-model="form.reminder" label="Pengingat" :options="reminderOptions" />
       <UiColorPicker v-model="form.color" />
       <div class="flex items-center justify-between gap-2 pt-2">
         <UiButton v-if="event" variant="ghost" :loading="deleting" @click="onDelete"

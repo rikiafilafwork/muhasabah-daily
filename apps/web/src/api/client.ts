@@ -15,6 +15,28 @@ export class ApiError extends Error {
   }
 }
 
+/** Kode error klien saat server tidak terjangkau (offline atau server mati). */
+export const OFFLINE_CODE = 'OFFLINE';
+
+export function isOfflineError(err: unknown): boolean {
+  return err instanceof ApiError && err.code === OFFLINE_CODE;
+}
+
+function offlineError(write: boolean): ApiError {
+  return new ApiError({
+    statusCode: 0,
+    code: OFFLINE_CODE,
+    message: write
+      ? 'Kamu sedang offline. Perubahan belum bisa disimpan; coba lagi saat tersambung.'
+      : 'Tidak bisa terhubung ke server, dan data ini belum tersimpan untuk dibuka offline.',
+  });
+}
+
+const isBrowserOffline = () => typeof navigator !== 'undefined' && navigator.onLine === false;
+
+/** Hasil memperbarui sesi: `offline` berarti server tidak terjangkau (sesi belum tentu berakhir). */
+export type RefreshResult = 'ok' | 'invalid' | 'offline';
+
 export interface ApiClientOptions {
   baseUrl?: string;
   /** Access token saat ini (disimpan di memori, bukan localStorage). */
@@ -45,7 +67,7 @@ const REFRESH_LOCK = 'muhasabah:refresh-token';
 export function createApiClient(options: ApiClientOptions) {
   const baseUrl = options.baseUrl ?? '/api/v1';
   const doFetch = options.fetch ?? ((...args: Parameters<typeof fetch>) => fetch(...args));
-  let refreshing: Promise<boolean> | null = null;
+  let refreshing: Promise<RefreshResult> | null = null;
 
   function buildUrl(path: string, query?: RequestOptions['query']): string {
     const qs = new URLSearchParams();
@@ -75,24 +97,36 @@ export function createApiClient(options: ApiClientOptions) {
     if (opts.body !== undefined) headers['content-type'] = 'application/json';
     const token = opts.auth === false ? null : options.getAccessToken();
     if (token) headers.authorization = `Bearer ${token}`;
-    return doFetch(buildUrl(path, opts.query), {
-      method,
-      headers,
-      body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
-      credentials: 'include',
-      signal: opts.signal,
-    });
+    const write = method !== 'GET';
+    // Tulis saat offline langsung ditolak; baca tetap dicoba agar service worker
+    // bisa menjawab dari cache.
+    if (write && isBrowserOffline()) throw offlineError(true);
+    try {
+      return await doFetch(buildUrl(path, opts.query), {
+        method,
+        headers,
+        body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
+        credentials: 'include',
+        signal: opts.signal,
+      });
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') throw err;
+      throw offlineError(write);
+    }
   }
 
-  async function doRefresh(): Promise<boolean> {
+  async function doRefresh(): Promise<RefreshResult> {
+    let res: Response;
     try {
-      const res = await send('POST', '/auth/refresh', { auth: false });
-      if (!res.ok) return false;
-      options.onRefreshed((await res.json()) as AuthResponse);
-      return true;
+      res = await send('POST', '/auth/refresh', { auth: false });
     } catch {
-      return false;
+      return 'offline';
     }
+    // 5xx/502 (server sedang mulai ulang) bukan tanda sesi berakhir.
+    if (res.status >= 500) return 'offline';
+    if (!res.ok) return 'invalid';
+    options.onRefreshed((await res.json()) as AuthResponse);
+    return 'ok';
   }
 
   /**
@@ -101,10 +135,10 @@ export function createApiClient(options: ApiClientOptions) {
    * dua tab yang me-refresh bersamaan mengirim token yang sama dan server
    * menganggapnya pemakaian ulang, lalu mencabut sesi.
    */
-  function refresh(): Promise<boolean> {
+  function refreshSession(): Promise<RefreshResult> {
     if (!refreshing) {
       const locks = typeof navigator !== 'undefined' ? navigator.locks : undefined;
-      const run = async (): Promise<boolean> =>
+      const run = async (): Promise<RefreshResult> =>
         locks ? await locks.request(REFRESH_LOCK, doRefresh) : doRefresh();
       refreshing = run().finally(() => {
         refreshing = null;
@@ -113,15 +147,16 @@ export function createApiClient(options: ApiClientOptions) {
     return refreshing;
   }
 
+  const refresh = async (): Promise<boolean> => (await refreshSession()) === 'ok';
+
   async function request<T>(method: string, path: string, opts: RequestOptions = {}): Promise<T> {
     let res = await send(method, path, opts);
 
     if (res.status === 401 && opts.auth !== false) {
-      if (await refresh()) {
-        res = await send(method, path, opts);
-      } else {
-        options.onSessionExpired();
-      }
+      const result = await refreshSession();
+      if (result === 'ok') res = await send(method, path, opts);
+      else if (result === 'offline') throw offlineError(method !== 'GET');
+      else options.onSessionExpired();
     }
 
     if (!res.ok) throw await parseError(res);
@@ -132,6 +167,7 @@ export function createApiClient(options: ApiClientOptions) {
   return {
     request,
     refresh,
+    refreshSession,
     get: <T>(path: string, opts?: RequestOptions) => request<T>('GET', path, opts),
     post: <T>(path: string, body?: unknown, opts?: RequestOptions) =>
       request<T>('POST', path, { ...opts, body }),

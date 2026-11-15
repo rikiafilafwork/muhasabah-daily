@@ -103,6 +103,34 @@ describe('createApiClient', () => {
     }
   });
 
+  it('galat jaringan menjadi OFFLINE dan tidak mengakhiri sesi', async () => {
+    const { client, onSessionExpired } = setup(() => {
+      throw new TypeError('Failed to fetch');
+    });
+    await expect(client.get('/me')).rejects.toMatchObject({ code: 'OFFLINE', status: 0 });
+    await expect(client.refreshSession()).resolves.toBe('offline');
+    expect(onSessionExpired).not.toHaveBeenCalled();
+  });
+
+  it('refresh gagal karena server mati (5xx) tidak mengakhiri sesi', async () => {
+    const { client, onSessionExpired } = setup((url) =>
+      url.endsWith('/auth/refresh') ? json(502, {}) : json(401, {}),
+    );
+    await expect(client.get('/me')).rejects.toMatchObject({ code: 'OFFLINE' });
+    expect(onSessionExpired).not.toHaveBeenCalled();
+  });
+
+  it('menolak perubahan saat browser offline tanpa memanggil jaringan', async () => {
+    vi.stubGlobal('navigator', { onLine: false });
+    try {
+      const { client, fetchMock } = setup(() => json(200, {}));
+      await expect(client.post('/tasks', {})).rejects.toMatchObject({ code: 'OFFLINE' });
+      expect(fetchMock).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('204 mengembalikan undefined', async () => {
     const { client } = setup(() => json(204, null));
     await expect(client.delete('/me')).resolves.toBeUndefined();

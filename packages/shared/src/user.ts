@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { OBLIGATORY_PRAYERS } from './prayer-times';
+import { prayerRemindersSchema } from './reminders';
 
 export const THEMES = ['light', 'dark', 'system'] as const;
 export const themeSchema = z.enum(THEMES);
@@ -32,6 +34,8 @@ export const profileSchema = z.object({
   longitude: longitudeSchema.nullable(),
   timezone: z.string(),
   theme: themeSchema,
+  /** Sholat yang diingatkan lewat notifikasi saat waktunya masuk. */
+  prayerReminders: z.array(z.enum(OBLIGATORY_PRAYERS)),
   createdAt: z.string(),
 });
 export type Profile = z.infer<typeof profileSchema>;
@@ -44,6 +48,7 @@ export const updateProfileSchema = z
     longitude: longitudeSchema.nullable(),
     timezone: timezoneSchema,
     theme: themeSchema,
+    prayerReminders: prayerRemindersSchema,
   })
   .partial()
   .strict()

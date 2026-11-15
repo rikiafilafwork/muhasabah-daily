@@ -8,6 +8,7 @@ export { default as UiInput } from './components/UiInput.vue';
 export { default as UiSelect } from './components/UiSelect.vue';
 export { default as UiTextarea } from './components/UiTextarea.vue';
 export { useCountdown, formatCountdown } from './composables/useCountdown';
+export { useOnline } from './composables/useOnline';
 export { useNow } from './composables/useNow';
 export { useTheme } from './composables/useTheme';
 export { useZodForm } from './composables/useZodForm';

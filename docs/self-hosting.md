@@ -94,6 +94,20 @@ docker compose down        # hentikan, data tetap tersimpan
 docker compose down -v     # hentikan dan HAPUS semua data (volume)
 ```
 
+## Pengingat (notifikasi)
+
+Pengingat waktu sholat dan agenda dikirim lewat Web Push. Container API membuat kunci VAPID sekali dan menyimpannya di volume `api-secrets`. Kalau volume itu dibuat ulang, setiap perangkat harus mengaktifkan notifikasi lagi.
+
+- Notifikasi hanya bisa diaktifkan lewat **HTTPS** atau `http://localhost`. Alamat `http://IP-lokal` dari ponsel tidak bisa; pakai reverse proxy HTTPS seperti di atas.
+- Di iPhone/iPad (iOS 16.4+), pasang aplikasi ke Layar Utama lalu aktifkan notifikasi dari aplikasi yang terpasang.
+- Isi `VAPID_SUBJECT` dengan alamat kontakmu (`mailto:kamu@contoh.id`); Safari menolak alamat yang tidak valid.
+- Notifikasi melewati layanan push milik browser (Google, Mozilla, Apple, atau Microsoft) dalam keadaan terenkripsi. Server hanya mengirim ke layanan-layanan tersebut.
+- Pengingat yang tertunda lebih dari 10 menit (mis. server mati) tidak dikirim.
+
+## Mode offline
+
+Aplikasi yang sudah pernah dibuka bisa dibuka lagi tanpa koneksi ke server: data terakhir yang pernah tampil diambil dari cache browser, dan perubahan ditolak sampai tersambung lagi (penghitung dzikir tetap diantre). Data tersimpan dan salinan profil dihapus dari perangkat saat keluar akun.
+
 ## Masalah umum
 
 | Gejala                                     | Penyebab dan solusi                                                                          |
@@ -103,3 +117,5 @@ docker compose down -v     # hentikan dan HAPUS semua data (volume)
 | Waktu sholat "sedang tidak tersedia"       | AlAdhan tidak bisa dihubungi. Fitur lain tetap jalan; jadwal muncul lagi saat koneksi pulih. |
 | Tombol "Poles dengan AI" tidak muncul      | `AI_PROVIDER` atau `AI_API_KEY` belum diisi, atau API belum di-restart.                      |
 | Login lewat domain HTTPS gagal             | Pastikan reverse proxy meneruskan `X-Forwarded-Proto` dan `PUBLIC_URL` sesuai domain.        |
+| Tombol "Aktifkan notifikasi" tidak muncul  | Buka lewat HTTPS atau localhost; di iPhone, pasang aplikasi ke Layar Utama dulu.             |
+| Notifikasi tes tidak muncul                | Periksa izin notifikasi browser/sistem dan mode Jangan Ganggu.                               |

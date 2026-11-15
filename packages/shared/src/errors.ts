@@ -37,6 +37,8 @@ export const ErrorCode = {
   AI_DISABLED: 'AI_DISABLED',
   AI_DAILY_LIMIT: 'AI_DAILY_LIMIT',
   LECTURE_NOTE_NOT_FOUND: 'LECTURE_NOTE_NOT_FOUND',
+  PUSH_DISABLED: 'PUSH_DISABLED',
+  PUSH_NO_SUBSCRIPTION: 'PUSH_NO_SUBSCRIPTION',
 } as const;
 
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];

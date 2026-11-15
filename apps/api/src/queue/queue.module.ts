@@ -20,7 +20,11 @@ export { QUEUES } from './connection';
         defaultJobOptions: { removeOnComplete: 100, removeOnFail: 100 },
       }),
     }),
-    BullModule.registerQueue({ name: QUEUES.seed }, { name: QUEUES.ai }),
+    BullModule.registerQueue(
+      { name: QUEUES.seed },
+      { name: QUEUES.ai },
+      { name: QUEUES.reminders },
+    ),
   ],
   exports: [BullModule],
 })

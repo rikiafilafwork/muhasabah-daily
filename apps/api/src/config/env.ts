@@ -45,6 +45,19 @@ export const envSchema = z
     AI_MODEL: z.preprocess(emptyToUndefined, z.string().default('claude-opus-5-5')),
     AI_DAILY_LIMIT: z.coerce.number().int().nonnegative().default(10),
     AI_MAX_INPUT_CHARS: z.coerce.number().int().positive().default(8000),
+    /** Kunci VAPID Web Push (pengingat). Kosong berarti pengingat mati. */
+    VAPID_PUBLIC_KEY: z.preprocess(emptyToUndefined, z.string().optional()),
+    VAPID_PRIVATE_KEY: z.preprocess(emptyToUndefined, z.string().optional()),
+    /** Kontak pengelola untuk layanan push (`mailto:` atau URL https). */
+    VAPID_SUBJECT: z.preprocess(
+      emptyToUndefined,
+      z
+        .string()
+        .regex(/^(mailto:|https:\/\/)/, 'harus diawali mailto: atau https://')
+        .default('mailto:admin@muhasabah.invalid'),
+    ),
+    /** Matikan penjadwal pengingat (mis. untuk test). */
+    REMINDERS_SCHEDULER: z.enum(['on', 'off']).default('on'),
     CORS_ORIGIN: z.preprocess(emptyToUndefined, z.string().default('http://localhost:5173')),
     LOG_LEVEL: z
       .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])

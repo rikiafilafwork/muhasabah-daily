@@ -2,6 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 
 const API_PORT = 3100;
 const WEB_PORT = 5174;
+/** Build produksi (service worker aktif) untuk test offline dan notifikasi. */
+export const PREVIEW_PORT = 5175;
 const MOCK_PORT = 4010;
 
 /**
@@ -21,6 +23,11 @@ const apiEnv = {
   CORS_ORIGIN: `http://localhost:${WEB_PORT}`,
   // Banyak test mendaftar akun baru dalam satu menit dari IP yang sama.
   AUTH_RATE_LIMIT: '200',
+  // Kunci VAPID khusus test; penjadwal pengingat dimatikan.
+  VAPID_PUBLIC_KEY:
+    'BFMYgufURTL_wLc69hsikpNWB9HFvMBkld83rZlcTZ6fZZtKixs6ZZwROg-DNPJhrLmXzUxumYQdmau7VH9seb8',
+  VAPID_PRIVATE_KEY: 'POK1dthTMkXfP4JOCeSuytuOY0pejHxwmJyE9XGLoCA', // gitleaks:allow
+  REMINDERS_SCHEDULER: 'off',
 };
 
 export default defineConfig({
@@ -56,6 +63,13 @@ export default defineConfig({
       command: `pnpm exec vite --port ${WEB_PORT} --strictPort`,
       url: `http://localhost:${WEB_PORT}`,
       env: { API_PROXY_TARGET: `http://localhost:${API_PORT}` },
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      command: `pnpm exec vite build --outDir dist-e2e --emptyOutDir && pnpm exec vite preview --outDir dist-e2e --port ${PREVIEW_PORT} --strictPort`,
+      url: `http://localhost:${PREVIEW_PORT}`,
+      env: { API_PROXY_TARGET: `http://localhost:${API_PORT}` },
+      timeout: 180_000,
       reuseExistingServer: !process.env.CI,
     },
   ],

@@ -17,6 +17,7 @@ import { JournalModule } from './modules/journal/journal.module';
 import { LectureNotesModule } from './modules/lecture-notes/lecture-notes.module';
 import { PrayerTimesModule } from './modules/prayer-times/prayer-times.module';
 import { QuranModule } from './modules/quran/quran.module';
+import { RemindersModule } from './modules/reminders/reminders.module';
 import { DhikrModule } from './modules/dhikr/dhikr.module';
 import { EventsModule } from './modules/events/events.module';
 import { FocusModule } from './modules/focus/focus.module';
@@ -86,6 +87,7 @@ const REQUEST_ID_PATTERN = /^[\w-]{1,64}$/;
     AiModule,
     JournalModule,
     LectureNotesModule,
+    RemindersModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },

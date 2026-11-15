@@ -37,17 +37,19 @@ enum Priority {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  name         String
-  city         String?
-  latitude     Float?
-  longitude    Float?
-  timezone     String   @default("Asia/Jakarta")
-  theme        Theme    @default(system)
-  createdAt    DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime @updatedAt @db.Timestamptz(3)
+  id              String   @id @default(cuid())
+  email           String   @unique
+  passwordHash    String
+  name            String
+  city            String?
+  latitude        Float?
+  longitude       Float?
+  timezone        String   @default("Asia/Jakarta")
+  theme           Theme    @default(system)
+  /// Sholat wajib yang diingatkan lewat Web Push saat waktunya masuk (fajr, dhuhr, ...).
+  prayerReminders String[] @default([])
+  createdAt       DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(3)
 
   refreshTokens     RefreshToken[]
   events            Event[]
@@ -60,6 +62,7 @@ model User {
   memorizationPlans MemorizationPlan[]
   journalEntries    JournalEntry[]
   lectureNotes      LectureNote[]
+  pushSubscriptions PushSubscription[]
 
   @@map("users")
 }
@@ -86,22 +89,28 @@ model RefreshToken {
 // ---------------------------------------------------------------- Fase 2
 
 model Event {
-  id          String   @id @default(cuid())
-  userId      String
-  title       String
-  description String?
-  location    String?
-  startAt     DateTime @db.Timestamptz(3)
-  endAt       DateTime @db.Timestamptz(3)
-  allDay      Boolean  @default(false)
-  color       Color    @default(emerald)
-  createdAt   DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt   DateTime @updatedAt @db.Timestamptz(3)
+  id              String    @id @default(cuid())
+  userId          String
+  title           String
+  description     String?
+  location        String?
+  startAt         DateTime  @db.Timestamptz(3)
+  endAt           DateTime  @db.Timestamptz(3)
+  allDay          Boolean   @default(false)
+  color           Color     @default(emerald)
+  /// Menit sebelum mulai untuk notifikasi; null = tanpa pengingat.
+  reminderMinutes Int?
+  /// startAt dikurangi reminderMinutes, agar penjadwal cukup memakai indeks.
+  remindAt        DateTime? @db.Timestamptz(3)
+  reminderSentAt  DateTime? @db.Timestamptz(3)
+  createdAt       DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime  @updatedAt @db.Timestamptz(3)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, startAt])
   @@index([userId, endAt])
+  @@index([remindAt])
   @@map("events")
 }
 
@@ -431,4 +440,22 @@ model LectureNote {
 
   @@index([userId, date])
   @@map("lecture_notes")
+}
+
+/// Langganan Web Push satu perangkat/browser. Endpoint unik; pindah akun di browser yang sama
+/// memindahkan langganan ke pengguna baru.
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_subscriptions")
 }

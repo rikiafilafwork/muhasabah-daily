@@ -14,3 +14,4 @@ export * from './quran';
 export * from './memorization';
 export * from './journal';
 export * from './lecture-notes';
+export * from './reminders';

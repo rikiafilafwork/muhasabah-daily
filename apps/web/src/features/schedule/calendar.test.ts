@@ -18,6 +18,7 @@ const ev = (over: Partial<CalendarEvent>): CalendarEvent => ({
   location: null,
   startAt: '2026-11-12T02:00:00.000Z',
   endAt: '2026-11-12T04:00:00.000Z',
+  reminderMinutes: null,
   allDay: false,
   color: 'emerald',
   createdAt: '',

@@ -15,3 +15,4 @@ apps/web/blob-report/
 dist-seed/
 # Klien Prisma 7 hasil `prisma generate`
 apps/api/src/generated/
+apps/web/dist-e2e/

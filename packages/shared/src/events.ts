@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { colorSchema, isoDateTimeSchema, optionalText, type Color } from './common';
+import { eventReminderSchema } from './reminders';
 
 const eventFields = {
   title: z.string().trim().min(1, 'Judul wajib diisi').max(200),
@@ -9,6 +10,7 @@ const eventFields = {
   endAt: isoDateTimeSchema,
   allDay: z.boolean(),
   color: colorSchema,
+  reminderMinutes: eventReminderSchema,
 };
 
 const endAfterStart = (v: { startAt?: string; endAt?: string }) =>
@@ -20,6 +22,7 @@ export const createEventSchema = z
     ...eventFields,
     allDay: eventFields.allDay.default(false),
     color: eventFields.color.default('emerald'),
+    reminderMinutes: eventFields.reminderMinutes.default(null),
   })
   .strict()
   .refine(endAfterStart, endAfterStartMsg);
@@ -57,6 +60,8 @@ export interface CalendarEvent {
   endAt: string;
   allDay: boolean;
   color: Color;
+  /** Menit sebelum mulai; `null` berarti tanpa pengingat. */
+  reminderMinutes: number | null;
   createdAt: string;
   updatedAt: string;
 }

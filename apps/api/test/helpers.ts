@@ -13,6 +13,22 @@ import { seedDhikr } from '../prisma/seed/dhikr';
 import { seedQuranFixture } from '../prisma/seed/quran-fixture';
 import { AI_PROVIDER, type AiProvider } from '../src/modules/ai/ai-provider';
 import { seedHabitTemplates } from '../prisma/seed/habit-templates';
+import {
+  WebPushSender,
+  type SendResult,
+  type StoredSubscription,
+} from '../src/modules/reminders/web-push.sender';
+
+/** Pengirim Web Push tiruan: mencatat notifikasi; endpoint di `gone` dianggap kedaluwarsa. */
+export class FakePush {
+  sent: { endpoint: string; payload: Record<string, string> }[] = [];
+  gone = new Set<string>();
+  async send(sub: StoredSubscription, body: string): Promise<SendResult> {
+    if (this.gone.has(sub.endpoint)) return 'gone';
+    this.sent.push({ endpoint: sub.endpoint, payload: JSON.parse(body) });
+    return 'sent';
+  }
+}
 
 export const P = '/api/v1';
 
@@ -52,6 +68,7 @@ export interface TestContext {
   prisma: PrismaService;
   redis: Redis;
   aladhan: FakeAladhan;
+  push: FakePush;
 }
 
 /** Penyedia AI tiruan: merapikan dengan aturan sederhana dan bisa diatur untuk menolak. */
@@ -74,9 +91,12 @@ export async function createTestApp(
   opts: { throttle?: boolean; ai?: AiProvider | null } = {},
 ): Promise<TestContext> {
   const aladhan = new FakeAladhan();
+  const push = new FakePush();
   let builder = Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(AladhanClient)
-    .useValue(aladhan);
+    .useValue(aladhan)
+    .overrideProvider(WebPushSender)
+    .useValue(push);
   if (!opts.throttle) builder = builder.overrideProvider(ThrottlerStorage).useValue(noThrottle);
   if ('ai' in opts) builder = builder.overrideProvider(AI_PROVIDER).useValue(opts.ai ?? null);
   const moduleRef = await builder.compile();
@@ -87,7 +107,7 @@ export async function createTestApp(
   await seedHabitTemplates(app.get(PrismaService));
   await seedDhikr(app.get(PrismaService), { online: false });
   await seedQuranFixture(app.get(PrismaService));
-  return { app, prisma: app.get(PrismaService), redis: app.get(REDIS), aladhan };
+  return { app, prisma: app.get(PrismaService), redis: app.get(REDIS), aladhan, push };
 }
 
 export async function resetData(ctx: TestContext) {

@@ -11,6 +11,20 @@ import { notFound } from '../../common/not-found';
 import { PrismaService } from '../../prisma/prisma.service';
 import type { CreateEventDto, EventsQueryDto } from './events.dto';
 
+/**
+ * Waktu kirim pengingat. Pengingat yang waktunya sudah lewat saat disimpan dianggap
+ * terkirim, agar agenda yang baru dibuat tidak langsung memicu notifikasi lama.
+ */
+export function reminderFields(
+  startAt: Date,
+  minutes: number | null,
+  now: Date = new Date(),
+): { reminderMinutes: number | null; remindAt: Date | null; reminderSentAt: Date | null } {
+  if (minutes === null) return { reminderMinutes: null, remindAt: null, reminderSentAt: null };
+  const remindAt = new Date(startAt.getTime() - minutes * 60_000);
+  return { reminderMinutes: minutes, remindAt, reminderSentAt: remindAt < now ? now : null };
+}
+
 export function toCalendarEvent(e: Event): CalendarEvent {
   return {
     id: e.id,
@@ -21,6 +35,7 @@ export function toCalendarEvent(e: Event): CalendarEvent {
     endAt: e.endAt.toISOString(),
     allDay: e.allDay,
     color: e.color,
+    reminderMinutes: e.reminderMinutes,
     createdAt: e.createdAt.toISOString(),
     updatedAt: e.updatedAt.toISOString(),
   };
@@ -59,6 +74,7 @@ export class EventsService {
         endAt: new Date(input.endAt),
         allDay: input.allDay,
         color: input.color,
+        ...reminderFields(new Date(input.startAt), input.reminderMinutes ?? null),
       },
     });
     return toCalendarEvent(e);
@@ -76,9 +92,19 @@ export class EventsService {
         [{ path: 'endAt', message: 'Waktu selesai harus setelah waktu mulai' }],
       );
     }
+    const minutes =
+      input.reminderMinutes === undefined ? current.reminderMinutes : input.reminderMinutes;
+    // Jadwal pengingat dihitung ulang hanya bila waktu mulai atau pilihannya berubah.
+    const reminderChanged =
+      startAt.getTime() !== current.startAt.getTime() || minutes !== current.reminderMinutes;
     const e = await this.prisma.event.update({
       where: { id },
-      data: { ...input, startAt, endAt },
+      data: {
+        ...input,
+        startAt,
+        endAt,
+        ...(reminderChanged ? reminderFields(startAt, minutes) : {}),
+      },
     });
     return toCalendarEvent(e);
   }
