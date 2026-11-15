@@ -4,7 +4,7 @@
  * Al-Qur'an baru ke repo). Terjemah per ayat tidak tersedia di sini, jadi kolom terjemah
  * diisi penanda. Jalankan `seed:quran` tanpa `--fixture` untuk data lengkap.
  */
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '../../src/generated/prisma/client';
 import { DHIKR_CONTENT } from './dhikr-content';
 
 const SURAHS = [

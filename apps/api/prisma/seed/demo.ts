@@ -6,7 +6,7 @@
  * dan dzikir. Hasilnya deterministik (PRNG dengan seed tetap) agar tangkapan
  * layar konsisten. Butuh `seed` dasar (template habit dan dzikir) lebih dulu.
  */
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '../../src/generated/prisma/client';
 import {
   addDays,
   buildTikrarStages,

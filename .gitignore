@@ -13,3 +13,5 @@ apps/web/test-results/
 apps/web/playwright-report/
 apps/web/blob-report/
 dist-seed/
+# Klien Prisma 7 hasil `prisma generate`
+apps/api/src/generated/

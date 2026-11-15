@@ -1,4 +1,4 @@
-import type { User } from '@prisma/client';
+import type { User } from '../../generated/prisma/client';
 import type { Profile } from '@muhasabah/shared';
 
 /** Memetakan baris User ke Profile publik. Tidak pernah menyertakan passwordHash. */

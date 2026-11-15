@@ -7,3 +7,4 @@ apps/web/playwright-report
 apps/web/test-results
 
 apps/api/dist-seed
+apps/api/src/generated

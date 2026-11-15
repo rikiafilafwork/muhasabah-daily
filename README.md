@@ -28,7 +28,7 @@ Aplikasi produktivitas Muslim open source yang dijalankan di komputermu sendiri.
 
 ## Stack
 
-Vue 3 + Vite + Pinia + Tailwind · NestJS 11 + Prisma 6 · PostgreSQL 17 · Redis 7 · TypeScript di seluruh stack, skema validasi bersama dengan Zod. Detail di [ARCHITECTURE.md](ARCHITECTURE.md).
+Vue 3 + Vite + Pinia + Tailwind · NestJS 11 + Prisma 7 · PostgreSQL 17 · Redis 7 · TypeScript di seluruh stack, skema validasi bersama dengan Zod. Detail di [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Menjalankan
 

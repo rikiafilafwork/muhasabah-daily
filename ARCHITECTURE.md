@@ -502,22 +502,23 @@ Job `docker` membangun image API dan web (tanpa push) untuk memastikan `docker c
 
 ## 15. Catatan keputusan (ADR ringkas)
 
-| #   | Keputusan                                                        | Alasan                                                       | Konsekuensi                                                            |
-| --- | ---------------------------------------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------- |
-| 1   | Vue 3 + Vite tanpa SSR                                           | Tidak ada situs publik yang perlu SEO                        | Lebih sederhana, tidak ada landing page terpisah                       |
-| 2   | NestJS 11 + Prisma 6 + PostgreSQL                                | Satu bahasa, skema bertipe, struktur modul jelas             | Perlu disiplin batas modul agar tidak saling bergantung                |
-| 3   | Monorepo pnpm dengan `packages/shared`                           | Tipe dan validasi dipakai bersama                            | Perlu build paket shared sebelum app (skrip root menanganinya)         |
-| 4   | Data Al-Qur'an di-seed, tidak di-commit                          | Menghindari masalah lisensi dan ukuran repo                  | Pengguna perlu menjalankan seeder sekali                               |
-| 5   | Audio di-stream dari sumber                                      | Tidak menyimpan audio                                        | Bergantung pada ketersediaan sumber, perlu penanganan error di pemutar |
-| 6   | AI opsional lewat API key sendiri                                | Tidak ada biaya yang ditanggung proyek                       | Fitur tidak tersedia tanpa kunci                                       |
-| 7   | Tanggal harian disimpan sebagai tanggal lokal                    | Streak dan log harian tidak bergeser di batas hari           | Perubahan zona waktu pengguna perlu penanganan khusus                  |
-| 8   | Refresh token di cookie `httpOnly`                               | Mengurangi risiko pencurian token lewat XSS                  | Perlu konfigurasi CORS dan cookie yang benar; dev memakai proxy Vite   |
-| 9   | Validasi dengan Zod + `nestjs-zod`                               | Satu skema untuk form web dan DTO API                        | Swagger dihasilkan dari skema zod                                      |
-| 10  | Worker BullMQ menyatu dengan proses API (v0.1)                   | Lebih sederhana untuk dijalankan lokal                       | Dapat dipisah ke entry point sendiri pada fase 6                       |
-| 11  | AI Polish lewat antarmuka `AiProvider`, Anthropic sebagai bawaan | Satu implementasi teruji, penyedia lain cukup menambah kelas | Hanya Anthropic yang tersedia sekarang; model dan kunci milik pengguna |
-| 12  | Data Al-Qur'an diimpor lewat antrean `seed`                      | Sesuai rancangan worker; progres terlihat                    | Butuh API berjalan, atau mode `--direct`                               |
-| 13  | `docker compose up` menyiapkan semuanya, secret dibuat otomatis  | Satu perintah untuk pengguna awam                            | Secret tersimpan di volume; cadangkan bersama data bila perlu          |
-| 14  | Web produksi disajikan nginx yang meneruskan `/api`              | Satu origin: cookie refresh dan CORS sederhana               | Port API tidak dibuka ke host                                          |
+| #   | Keputusan                                                               | Alasan                                                        | Konsekuensi                                                                                        |
+| --- | ----------------------------------------------------------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| 1   | Vue 3 + Vite tanpa SSR                                                  | Tidak ada situs publik yang perlu SEO                         | Lebih sederhana, tidak ada landing page terpisah                                                   |
+| 2   | NestJS 11 + Prisma 7 + PostgreSQL                                       | Satu bahasa, skema bertipe, struktur modul jelas              | Perlu disiplin batas modul agar tidak saling bergantung                                            |
+| 3   | Monorepo pnpm dengan `packages/shared`                                  | Tipe dan validasi dipakai bersama                             | Perlu build paket shared sebelum app (skrip root menanganinya)                                     |
+| 4   | Data Al-Qur'an di-seed, tidak di-commit                                 | Menghindari masalah lisensi dan ukuran repo                   | Pengguna perlu menjalankan seeder sekali                                                           |
+| 5   | Audio di-stream dari sumber                                             | Tidak menyimpan audio                                         | Bergantung pada ketersediaan sumber, perlu penanganan error di pemutar                             |
+| 6   | AI opsional lewat API key sendiri                                       | Tidak ada biaya yang ditanggung proyek                        | Fitur tidak tersedia tanpa kunci                                                                   |
+| 7   | Tanggal harian disimpan sebagai tanggal lokal                           | Streak dan log harian tidak bergeser di batas hari            | Perubahan zona waktu pengguna perlu penanganan khusus                                              |
+| 8   | Refresh token di cookie `httpOnly`                                      | Mengurangi risiko pencurian token lewat XSS                   | Perlu konfigurasi CORS dan cookie yang benar; dev memakai proxy Vite                               |
+| 9   | Validasi dengan Zod + `nestjs-zod`                                      | Satu skema untuk form web dan DTO API                         | Swagger dihasilkan dari skema zod                                                                  |
+| 10  | Worker BullMQ menyatu dengan proses API (v0.1)                          | Lebih sederhana untuk dijalankan lokal                        | Dapat dipisah ke entry point sendiri pada fase 6                                                   |
+| 11  | AI Polish lewat antarmuka `AiProvider`, Anthropic sebagai bawaan        | Satu implementasi teruji, penyedia lain cukup menambah kelas  | Hanya Anthropic yang tersedia sekarang; model dan kunci milik pengguna                             |
+| 12  | Data Al-Qur'an diimpor lewat antrean `seed`                             | Sesuai rancangan worker; progres terlihat                     | Butuh API berjalan, atau mode `--direct`                                                           |
+| 13  | `docker compose up` menyiapkan semuanya, secret dibuat otomatis         | Satu perintah untuk pengguna awam                             | Secret tersimpan di volume; cadangkan bersama data bila perlu                                      |
+| 14  | Web produksi disajikan nginx yang meneruskan `/api`                     | Satu origin: cookie refresh dan CORS sederhana                | Port API tidak dibuka ke host                                                                      |
+| 15  | Prisma 7: generator `prisma-client` (CommonJS) dan `@prisma/adapter-pg` | Tanpa engine Rust, klien bertipe ikut dikompilasi bersama API | Klien dibuat ke `src/generated/prisma` (tidak di-commit); URL koneksi diatur di `prisma.config.ts` |
 
 ## 16. Pemetaan ke fase pengerjaan
 

@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import type { Habit as HabitRow } from '@prisma/client';
+import type { Habit as HabitRow } from '../../generated/prisma/client';
 import {
   addDays,
   ErrorCode,

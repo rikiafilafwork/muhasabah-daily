@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import type { LectureNote as NoteRow, Prisma } from '@prisma/client';
+import type { LectureNote as NoteRow, Prisma } from '../../generated/prisma/client';
 import {
   ErrorCode,
   extractRichDoc,

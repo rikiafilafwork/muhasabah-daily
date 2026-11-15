@@ -1,6 +1,6 @@
 import { InjectQueue } from '@nestjs/bullmq';
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
-import type { JournalEntry as EntryRow } from '@prisma/client';
+import type { JournalEntry as EntryRow } from '../../generated/prisma/client';
 import type { Queue } from 'bullmq';
 import { createHash } from 'node:crypto';
 import type Redis from 'ioredis';

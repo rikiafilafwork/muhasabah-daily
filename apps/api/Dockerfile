@@ -10,7 +10,8 @@ RUN pnpm --filter @muhasabah/shared build \
   && pnpm --filter api build \
   && pnpm --filter api build:seed \
   && pnpm --filter api deploy --prod --legacy /out \
-  && cd /out && ./node_modules/.bin/prisma generate \
+  # Klien Prisma 7 sudah ikut terkompilasi di dist/ dan dist-seed/, jadi tidak perlu generate.
+  && cd /out \
   # Ganti symlink paket workspace dengan salinan nyata (dist + package.json).
   && rm node_modules/@muhasabah/shared \
   && mkdir -p node_modules/@muhasabah/shared \

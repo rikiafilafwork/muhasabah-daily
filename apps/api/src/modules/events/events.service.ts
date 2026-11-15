@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import type { Event } from '@prisma/client';
+import type { Event } from '../../generated/prisma/client';
 import {
   ErrorCode,
   type CalendarEvent,

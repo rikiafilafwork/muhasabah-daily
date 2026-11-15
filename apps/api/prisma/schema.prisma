@@ -1,12 +1,16 @@
 // Skema basis data Muhasabah Daily. Lihat ARCHITECTURE.md bagian 6.
 
+// Prisma 7: klien TypeScript dibuat ke src/generated/prisma (tidak di-commit) dan
+// dikompilasi bersama kode API. Format CommonJS mengikuti build NestJS.
 generator client {
-  provider = "prisma-client-js"
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
 }
 
+// URL koneksi diatur di prisma.config.ts (CLI) dan driver adapter (runtime).
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum Theme {

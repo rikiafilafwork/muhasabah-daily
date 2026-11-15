@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import type { Ayah as AyahRow, Surah as SurahRow } from '@prisma/client';
+import type { Ayah as AyahRow, Surah as SurahRow } from '../../generated/prisma/client';
 import { ErrorCode, type Ayah, type Surah } from '@muhasabah/shared';
 import { AppException } from '../../common/app.exception';
 import { notFound } from '../../common/not-found';

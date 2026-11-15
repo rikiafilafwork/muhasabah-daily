@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '../../src/generated/prisma/client';
 import { normalizeArabic, stripBasmalah, toArabicDigits } from '../../src/common/arabic';
 import { DHIKR_CONTENT, type DhikrSeed, type QuranRef } from './dhikr-content';
 

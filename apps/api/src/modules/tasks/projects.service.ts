@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { Project as ProjectRow } from '@prisma/client';
+import type { Project as ProjectRow } from '../../generated/prisma/client';
 import {
   ErrorCode,
   type Paginated,

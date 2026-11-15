@@ -2,14 +2,14 @@
  * `pnpm --filter api seed:demo` — membuat ulang akun demo beserta datanya.
  * Ditolak saat NODE_ENV=production agar tidak tercampur dengan data asli.
  */
-import { PrismaClient } from '@prisma/client';
+import { createPrismaClient } from '../../src/prisma/create-client';
 import { seedDemo } from './demo';
 
 async function main() {
   if (process.env.NODE_ENV === 'production') {
     throw new Error('seed:demo tidak dijalankan pada NODE_ENV=production.');
   }
-  const prisma = new PrismaClient();
+  const prisma = createPrismaClient();
   try {
     const [templates, dhikr] = await Promise.all([
       prisma.habitTemplate.count(),

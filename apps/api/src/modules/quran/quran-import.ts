@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '../../generated/prisma/client';
 import { AYAH_COUNT, SURAH_COUNT } from '@muhasabah/shared';
 import { stripBasmalah } from '../../common/arabic';
 

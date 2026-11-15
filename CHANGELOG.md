@@ -4,6 +4,10 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/id-ID/1.1.0/) dan
 
 ## [Belum dirilis]
 
+### Diubah
+
+- **Prisma 7:** generator `prisma-client` (format CommonJS) dengan klien yang dibuat ke `apps/api/src/generated/prisma`, koneksi lewat driver adapter `@prisma/adapter-pg`, dan URL basis data dipindah dari skema ke `apps/api/prisma.config.ts`. Sekaligus menghilangkan kerentanan `deepmerge-ts` yang dibawa Prisma 6.
+
 ### Ditambahkan
 
 - **Landing page** di `/welcome` untuk pengunjung yang belum masuk: hero dengan tangkapan layar, daftar fitur, sorotan jadwal/habit/dzikir, penjelasan privasi, dan perintah instalasi Docker. Membuka `/` tanpa sesi kini diarahkan ke landing page; pengguna yang sudah masuk tetap ke Beranda.

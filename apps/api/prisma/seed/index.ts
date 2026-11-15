@@ -4,12 +4,12 @@
  *
  * `--offline` memakai teks bawaan tanpa menghubungi AlQuran Cloud.
  */
-import { PrismaClient } from '@prisma/client';
+import { createPrismaClient } from '../../src/prisma/create-client';
 import { seedDhikr } from './dhikr';
 import { seedHabitTemplates } from './habit-templates';
 
 async function main() {
-  const prisma = new PrismaClient();
+  const prisma = createPrismaClient();
   const online = !process.argv.includes('--offline');
   try {
     console.log(`habit_templates: ${await seedHabitTemplates(prisma)} baris`);

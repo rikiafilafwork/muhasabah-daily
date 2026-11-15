@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import type { Prisma, Task as TaskRow } from '@prisma/client';
+import type { Prisma, Task as TaskRow } from '../../generated/prisma/client';
 import { ErrorCode, type Paginated, type Task, type UpdateTaskInput } from '@muhasabah/shared';
 import { AppException } from '../../common/app.exception';
 import { fromDbDate, fromDbDateOrNull, toDbDate } from '../../common/date-only';
