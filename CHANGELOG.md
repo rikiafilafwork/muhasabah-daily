@@ -4,6 +4,8 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/id-ID/1.1.0/) dan
 
 ## [Belum dirilis]
 
+## [1.2.0] — 2026-11-15
+
 ### Ditambahkan
 
 - **Pengingat lewat notifikasi (Web Push):** notifikasi saat waktu sholat masuk (pilih per sholat di Pengaturan) dan sebelum agenda dimulai (saat mulai sampai 1 hari sebelumnya, diatur per agenda). Kunci VAPID dibuat otomatis di mode Docker; tombol notifikasi tes; perangkat berhenti menerima notifikasi saat keluar akun. Butuh HTTPS atau localhost.
@@ -87,6 +89,7 @@ Rilis pertama: fase 0–4 dari [peta fase](ARCHITECTURE.md#16-pemetaan-ke-fase-p
 
 - Teks dzikir dari hadis dan rujukan library habit perlu ditinjau pengelola; lihat [DATA_SOURCES.md](DATA_SOURCES.md).
 
+[1.2.0]: ../../releases/tag/v1.2.0
 [1.1.0]: ../../releases/tag/v1.1.0
 [1.0.0]: ../../releases/tag/v1.0.0
 [0.1.0]: ../../releases/tag/v0.1.0

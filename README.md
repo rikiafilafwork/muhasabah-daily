@@ -2,7 +2,7 @@
 
 Aplikasi produktivitas Muslim open source yang dijalankan di komputermu sendiri. Jadwal, to-do, habit, goals, fokus, dzikir, hafalan, jurnal, dan catatan kajian disusun di sekitar waktu sholat.
 
-> **v1.1.0** — tampilan baru bergaya web personal: navigasi header di desktop, tab bar di ponsel, dan tombol mode gelap. Lihat [CHANGELOG.md](CHANGELOG.md).
+> **v1.2.0** — pengingat waktu sholat dan agenda lewat notifikasi, mode offline, dan landing page. Lihat [CHANGELOG.md](CHANGELOG.md).
 
 ![Beranda: waktu sholat, fokus hari ini, habit, dzikir, dan agenda](docs/screenshots/beranda.png)
 
@@ -18,6 +18,8 @@ Aplikasi produktivitas Muslim open source yang dijalankan di komputermu sendiri.
 - **Hafidz**: rencana hafalan dengan tahapan tikrar (dengar, baca sendiri, sambung) dan pemutar murottal per ayat.
 - **Jurnal** harian dengan simpan otomatis dan **AI Polish** opsional (Claude, kunci API milikmu) yang merapikan ejaan tanpa menimpa teks asli.
 - **Catatan Kajian** dengan editor teks kaya dan rujukan ayat yang menampilkan teks Arab dan terjemah.
+- **Pengingat** lewat notifikasi (Web Push) saat waktu sholat masuk dan sebelum agenda dimulai; butuh HTTPS atau localhost.
+- **Mode offline**: aplikasi yang pernah dibuka tetap bisa dibuka dengan data terakhir saat server tidak terjangkau.
 - Tombol mode gelap (terang/gelap/ikuti sistem) di header, tampilan ponsel dengan tab bar bawah, dan audit aksesibilitas WCAG 2.1 AA otomatis di setiap halaman.
 
 | Jadwal hari                                                          | Habit dan insight                                         | Dzikir (gelap)                                                 |
