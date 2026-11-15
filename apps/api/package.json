@@ -30,7 +30,7 @@
     "@nestjs/platform-express": "^11.2.9",
     "@nestjs/swagger": "^11.4.8",
     "@nestjs/throttler": "^6.7.1",
-    "@prisma/client": "^6.19.3",
+    "@prisma/client": "^7.10.1",
     "argon2": "^0.45.2",
     "bullmq": "^6.7.4",
     "cookie-parser": "^1.4.7",
