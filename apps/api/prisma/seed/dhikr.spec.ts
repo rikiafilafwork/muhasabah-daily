@@ -29,17 +29,13 @@ describe('normalizeArabic', () => {
     expect(normalizeArabic('فِى')).toBe(normalizeArabic('فِي'));
   });
   it('tetap membedakan kata yang berbeda', () => {
-    expect(normalizeArabic('قُلْ هُوَ اللَّهُ أَحَدٌ')).not.toBe(
-      normalizeArabic('قُلْ هُوَ اللَّهُ الصَّمَدُ'),
-    );
+    expect(normalizeArabic('قُلْ هُوَ اللَّهُ أَحَدٌ')).not.toBe(normalizeArabic('قُلْ هُوَ اللَّهُ الصَّمَدُ'));
   });
 });
 
 describe('stripBasmalah', () => {
   it('memotong basmalah yang menempel di ayat pertama', () => {
-    expect(stripBasmalah('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ قُلْ هُوَ ٱللَّهُ أَحَدٌ')).toBe(
-      'قُلْ هُوَ ٱللَّهُ أَحَدٌ',
-    );
+    expect(stripBasmalah('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ قُلْ هُوَ ٱللَّهُ أَحَدٌ')).toBe('قُلْ هُوَ ٱللَّهُ أَحَدٌ');
     expect(stripBasmalah('ٱللَّهُ ٱلصَّمَدُ')).toBe('ٱللَّهُ ٱلصَّمَدُ');
   });
 });
