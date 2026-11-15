@@ -44,8 +44,7 @@ const AYAT_KURSI: Omit<DhikrSeed, 'groups' | 'reference' | 'note' | 'repeat' | '
 const IKHLAS = {
   title: 'Surah Al-Ikhlas',
   quran: { surah: 112, from: 1, to: 4 },
-  arabic:
-    'قُلْ هُوَ اللَّهُ أَحَدٌ ۝ اللَّهُ الصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ',
+  arabic: 'قُلْ هُوَ اللَّهُ أَحَدٌ ۝ اللَّهُ الصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ',
   latin:
     'Qul huwallāhu aḥad. Allāhuṣ-ṣamad. Lam yalid wa lam yūlad. Wa lam yakul lahū kufuwan aḥad.',
   translation:
@@ -95,8 +94,7 @@ const SAYYIDUL_ISTIGHFAR = {
 const BISMILLAH_LA_YADHURRU = {
   slug: 'bismillahilladzi',
   title: 'Perlindungan dengan nama Allah',
-  arabic:
-    'بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ',
+  arabic: 'بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ',
   latin:
     "Bismillāhil-lażī lā yaḍurru ma'asmihī syai'un fil-arḍi wa lā fis-samā', wa huwas-samī'ul-'alīm.",
   translation:
@@ -108,8 +106,7 @@ const BISMILLAH_LA_YADHURRU = {
 const RADHITU = {
   slug: 'radhitu',
   title: 'Ridha kepada Allah, Islam, dan Nabi Muhammad ﷺ',
-  arabic:
-    'رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ نَبِيًّا',
+  arabic: 'رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ نَبِيًّا',
   latin:
     "Raḍītu billāhi rabbā, wa bil-islāmi dīnā, wa bi muḥammadin ṣallallāhu 'alaihi wa sallama nabiyyā.",
   translation: 'Aku ridha Allah sebagai Tuhan, Islam sebagai agama, dan Muhammad ﷺ sebagai nabi.',
@@ -120,8 +117,7 @@ const RADHITU = {
 const HASBIYALLAH = {
   slug: 'hasbiyallah',
   title: 'Cukuplah Allah bagiku',
-  arabic:
-    'حَسْبِيَ اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ، عَلَيْهِ تَوَكَّلْتُ، وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ',
+  arabic: 'حَسْبِيَ اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ، عَلَيْهِ تَوَكَّلْتُ، وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ',
   latin: "Ḥasbiyallāhu lā ilāha illā huwa, 'alaihi tawakkaltu, wa huwa rabbul-'arsyil-'aẓīm.",
   translation:
     'Cukuplah Allah bagiku, tidak ada tuhan selain Dia. Kepada-Nya aku bertawakal, dan Dia adalah Tuhan pemilik Arsy yang agung.',
@@ -193,8 +189,7 @@ export const DHIKR_CONTENT: DhikrSeed[] = [
     slug: 'allahumma-bika-ashbahna',
     groups: ['pagi'],
     title: 'Dengan-Mu kami memasuki pagi',
-    arabic:
-      'اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ النُّشُورُ',
+    arabic: 'اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ النُّشُورُ',
     latin:
       'Allāhumma bika aṣbaḥnā, wa bika amsainā, wa bika naḥyā, wa bika namūtu, wa ilaikan-nusyūr.',
     translation:
@@ -206,8 +201,7 @@ export const DHIKR_CONTENT: DhikrSeed[] = [
     slug: 'allahumma-bika-amsaina',
     groups: ['petang'],
     title: 'Dengan-Mu kami memasuki petang',
-    arabic:
-      'اللَّهُمَّ بِكَ أَمْسَيْنَا، وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ الْمَصِيرُ',
+    arabic: 'اللَّهُمَّ بِكَ أَمْسَيْنَا، وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ الْمَصِيرُ',
     latin:
       'Allāhumma bika amsainā, wa bika aṣbaḥnā, wa bika naḥyā, wa bika namūtu, wa ilaikal-maṣīr.',
     translation:
@@ -234,8 +228,7 @@ export const DHIKR_CONTENT: DhikrSeed[] = [
     slug: 'tahlil',
     groups: ['pagi'],
     title: 'Tahlil',
-    arabic:
-      'لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ',
+    arabic: 'لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ',
     latin:
       "Lā ilāha illallāhu waḥdahū lā syarīka lah, lahul-mulku wa lahul-ḥamd, wa huwa 'alā kulli syai'in qadīr.",
     translation:

@@ -6,9 +6,7 @@ const BASMALAH = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَ�
 describe('cleanArabic', () => {
   it('membuang BOM dan basmalah yang menempel', () => {
     expect(cleanArabic(1, 1, `\uFEFF${BASMALAH}`)).toBe(BASMALAH);
-    expect(cleanArabic(112, 1, `${BASMALAH} قُلْ هُوَ ٱللَّهُ أَحَدٌ`)).toBe(
-      'قُلْ هُوَ ٱللَّهُ أَحَدٌ',
-    );
+    expect(cleanArabic(112, 1, `${BASMALAH} قُلْ هُوَ ٱللَّهُ أَحَدٌ`)).toBe('قُلْ هُوَ ٱللَّهُ أَحَدٌ');
     expect(cleanArabic(112, 2, 'ٱللَّهُ ٱلصَّمَدُ')).toBe('ٱللَّهُ ٱلصَّمَدُ');
   });
 });
