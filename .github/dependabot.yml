@@ -8,6 +8,16 @@ updates:
       minor-dan-patch:
         update-types: [minor, patch]
     open-pull-requests-limit: 5
+    ignore:
+      # NestJS sengaja di versi 11 karena nestjs-zod belum mendukung 12.
+      - dependency-name: '@nestjs/*'
+        update-types: [version-update:semver-major]
+      # Tipe Node mengikuti Node LTS yang dipakai (24).
+      - dependency-name: '@types/node'
+        update-types: [version-update:semver-major]
+      # TypeScript mayor dinaikkan manual setelah diuji.
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
   - package-ecosystem: github-actions
     directory: /
     schedule:
