@@ -18,6 +18,11 @@ updates:
       # TypeScript mayor dinaikkan manual setelah diuji.
       - dependency-name: typescript
         update-types: [version-update:semver-major]
+      # Prisma 7 butuh penyesuaian kode; di-upgrade manual (prisma dan @prisma/client bersamaan).
+      - dependency-name: prisma
+        update-types: [version-update:semver-major]
+      - dependency-name: '@prisma/client'
+        update-types: [version-update:semver-major]
   - package-ecosystem: github-actions
     directory: /
     schedule:
