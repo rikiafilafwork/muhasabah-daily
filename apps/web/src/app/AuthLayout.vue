@@ -40,10 +40,10 @@ const HIGHLIGHTS = [
         <rect width="100%" height="100%" fill="url(#auth-star)" />
       </svg>
 
-      <div class="relative flex items-center gap-2.5">
+      <RouterLink to="/welcome" class="relative flex w-fit items-center gap-2.5">
         <img src="/favicon.svg" alt="" class="size-9" />
         <span class="font-display text-xl font-semibold">Muhasabah Daily</span>
-      </div>
+      </RouterLink>
 
       <div class="relative my-auto max-w-md">
         <p class="font-display text-4xl leading-tight font-semibold text-white xl:text-5xl">
@@ -76,10 +76,10 @@ const HIGHLIGHTS = [
         aria-hidden="true"
       />
       <div class="relative flex items-center justify-between">
-        <div class="flex items-center gap-2.5 lg:invisible">
+        <RouterLink to="/welcome" class="flex items-center gap-2.5 lg:invisible">
           <img src="/favicon.svg" alt="" class="size-8" />
           <span class="font-display text-lg font-semibold">Muhasabah Daily</span>
-        </div>
+        </RouterLink>
         <ThemeToggle />
       </div>
 

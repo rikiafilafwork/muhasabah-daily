@@ -7,9 +7,10 @@ test('daftar, atur lokasi, lihat waktu sholat, keluar, lalu masuk lagi', async (
   const password = 'rahasia-sekali';
 
   await page.goto('/');
-  await expect(page).toHaveURL(/\/login/);
+  await expect(page).toHaveURL(/\/welcome/);
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('waktu sholat');
 
-  await page.getByRole('link', { name: 'Daftar' }).click();
+  await page.getByRole('link', { name: 'Mulai sekarang' }).click();
   await page.getByLabel('Nama').fill('Hamba Allah');
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Kata sandi').fill(password);

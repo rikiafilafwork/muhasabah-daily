@@ -2,6 +2,12 @@
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/id-ID/1.1.0/) dan versi mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 
+## [Belum dirilis]
+
+### Ditambahkan
+
+- **Landing page** di `/welcome` untuk pengunjung yang belum masuk: hero dengan tangkapan layar, daftar fitur, sorotan jadwal/habit/dzikir, penjelasan privasi, dan perintah instalasi Docker. Membuka `/` tanpa sesi kini diarahkan ke landing page; pengguna yang sudah masuk tetap ke Beranda.
+
 ## [1.1.0] — 2026-11-14
 
 ### Diubah

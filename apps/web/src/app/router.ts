@@ -4,6 +4,7 @@ import { dashboardRoutes } from '@/features/dashboard';
 import { dhikrRoutes } from '@/features/dhikr';
 import { focusRoutes } from '@/features/focus';
 import { journalRoutes } from '@/features/journal';
+import { landingRoutes } from '@/features/landing';
 import { lectureNotesRoutes } from '@/features/lecture-notes';
 import { memorizationRoutes } from '@/features/memorization';
 import { goalsRoutes } from '@/features/goals';
@@ -16,12 +17,13 @@ declare module 'vue-router' {
   interface RouteMeta {
     requiresAuth?: boolean;
     guestOnly?: boolean;
-    layout?: 'app' | 'auth';
+    layout?: 'app' | 'auth' | 'blank';
     title?: string;
   }
 }
 
 const routes: RouteRecordRaw[] = [
+  ...landingRoutes,
   ...authRoutes,
   ...dashboardRoutes,
   ...profileRoutes,
@@ -47,7 +49,9 @@ router.beforeEach(async (to) => {
   if (session.status === 'unknown') await session.bootstrap();
 
   if (to.meta.requiresAuth && !session.isAuthenticated) {
-    return { name: 'login', query: to.fullPath !== '/' ? { redirect: to.fullPath } : undefined };
+    // Pengunjung yang membuka beranda tanpa sesi melihat landing page.
+    if (to.name === 'dashboard') return { name: 'landing' };
+    return { name: 'login', query: { redirect: to.fullPath } };
   }
   if (to.meta.guestOnly && session.isAuthenticated) return { name: 'dashboard' };
   return true;

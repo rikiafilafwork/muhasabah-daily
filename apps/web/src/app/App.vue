@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { RouterView, useRoute } from 'vue-router';
 import AppLayout from './AppLayout.vue';
 import AuthLayout from './AuthLayout.vue';
 
 const route = useRoute();
-const layout = computed(() => (route.meta.layout === 'auth' ? AuthLayout : AppLayout));
+const layout = computed(() => {
+  if (route.meta.layout === 'auth') return AuthLayout;
+  if (route.meta.layout === 'blank') return RouterView;
+  return AppLayout;
+});
 </script>
 
 <template>

@@ -41,6 +41,8 @@ export default defineConfig({
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//],
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // Tangkapan layar landing page tidak perlu ikut cache offline.
+        globIgnores: ['landing/**'],
         runtimeCaching: [],
       },
     }),

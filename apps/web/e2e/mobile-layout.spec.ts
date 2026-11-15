@@ -67,3 +67,9 @@ test('tidak ada konten meluber di layar 390 px', async ({ page }) => {
   }
   expect(found).toEqual({});
 });
+
+test('landing page tidak meluber di layar 390 px', async ({ page }) => {
+  await page.goto('/welcome');
+  await page.waitForLoadState('networkidle');
+  expect(await overflowing(page)).toEqual([]);
+});

@@ -60,6 +60,16 @@ test('halaman masuk tanpa pelanggaran', async ({ page }) => {
 });
 
 for (const scheme of ['light', 'dark'] as const) {
+  test(`landing page tanpa pelanggaran (mode ${scheme === 'light' ? 'terang' : 'gelap'})`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ colorScheme: scheme });
+    await page.goto('/welcome');
+    expect(await audit(page)).toEqual([]);
+  });
+}
+
+for (const scheme of ['light', 'dark'] as const) {
   test(`semua halaman tanpa pelanggaran (mode ${scheme === 'light' ? 'terang' : 'gelap'})`, async ({
     page,
   }) => {
