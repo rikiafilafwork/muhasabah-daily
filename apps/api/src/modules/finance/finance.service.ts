@@ -31,9 +31,13 @@ import type {
 
 type TransactionWithCategory = TransactionRow & {
   category: Pick<CategoryRow, 'id' | 'name' | 'color'>;
+  plan: { id: string } | null;
 };
 
-const withCategory = { category: { select: { id: true, name: true, color: true } } } as const;
+const withCategory = {
+  category: { select: { id: true, name: true, color: true } },
+  plan: { select: { id: true } },
+} as const;
 
 export function toTransaction(t: TransactionWithCategory): Transaction {
   return {
@@ -43,6 +47,7 @@ export function toTransaction(t: TransactionWithCategory): Transaction {
     date: fromDbDate(t.date),
     note: t.note,
     category: t.category,
+    planId: t.plan?.id ?? null,
     createdAt: t.createdAt.toISOString(),
     updatedAt: t.updatedAt.toISOString(),
   };
@@ -162,10 +167,11 @@ export class FinanceService {
   }
 
   async summary(userId: string, monthInput?: string): Promise<FinanceSummary> {
-    const month = monthInput ?? (await this.currentMonth(userId));
+    const { today } = await this.users.getClock(userId);
+    const month = monthInput ?? monthOf(today);
     const prev = addMonths(month, -1);
 
-    const [current, previous, byCategory] = await Promise.all([
+    const [current, previous, byCategory, plans] = await Promise.all([
       this.prisma.financeTransaction.groupBy({
         by: ['type'],
         where: { userId, date: monthWhere(month) },
@@ -183,10 +189,24 @@ export class FinanceService {
         _sum: { amount: true },
         _count: { _all: true },
       }),
+      this.prisma.financePlan.findMany({
+        where: { userId, month },
+        select: { categoryId: true, type: true, amount: true, date: true, transactionId: true },
+      }),
     ]);
 
+    const plannedByCategory = new Map<string, number>();
+    for (const p of plans) {
+      plannedByCategory.set(
+        p.categoryId,
+        (plannedByCategory.get(p.categoryId) ?? 0) + Number(p.amount),
+      );
+    }
+    const actualByCategory = new Map(byCategory.map((r) => [r.categoryId, r]));
+    const categoryIds = [...new Set([...actualByCategory.keys(), ...plannedByCategory.keys()])];
+
     const cats = await this.prisma.financeCategory.findMany({
-      where: { userId, id: { in: byCategory.map((r) => r.categoryId) } },
+      where: { userId, id: { in: categoryIds } },
       select: { id: true, name: true, color: true, type: true },
     });
     const catById = new Map(cats.map((c) => [c.id, c]));
@@ -201,22 +221,38 @@ export class FinanceService {
         prev,
         previous.map((r) => ({ type: r.type, total: r._sum.amount })),
       ),
-      byCategory: byCategory
-        .flatMap((r) => {
-          const c = catById.get(r.categoryId);
+      planned: totalsOf(
+        month,
+        plans.map((p) => ({ type: p.type, total: p.amount })),
+      ),
+      plans: {
+        total: plans.length,
+        done: plans.filter((p) => p.transactionId).length,
+        pending: plans.filter((p) => !p.transactionId).length,
+        overdue: plans.filter((p) => !p.transactionId && fromDbDate(p.date) < today).length,
+      },
+      byCategory: categoryIds
+        .flatMap((id) => {
+          const c = catById.get(id);
           if (!c) return [];
+          const r = actualByCategory.get(id);
           return [
             {
               categoryId: c.id,
               name: c.name,
               color: c.color,
               type: c.type,
-              total: Number(r._sum.amount ?? 0),
-              count: r._count._all,
+              total: Number(r?._sum.amount ?? 0),
+              count: r?._count._all ?? 0,
+              planned: plannedByCategory.get(id) ?? 0,
             },
           ];
         })
-        .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name, 'id')),
+        .sort(
+          (a, b) =>
+            Math.max(b.total, b.planned) - Math.max(a.total, a.planned) ||
+            a.name.localeCompare(b.name, 'id'),
+        ),
     };
   }
 

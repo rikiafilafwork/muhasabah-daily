@@ -48,3 +48,20 @@ describe('finance', () => {
     expect(createTransactionSchema.safeParse({ ...base, type: 'income' }).success).toBe(false);
   });
 });
+
+describe('anggaran', () => {
+  it('tanggal rencana dipotong ke akhir bulan', async () => {
+    const { planDateFor } = await import('./finance');
+    expect(planDateFor('2026-02', 31)).toBe('2026-02-28');
+    expect(planDateFor('2028-02', 30)).toBe('2028-02-29');
+    expect(planDateFor('2026-11', 5)).toBe('2026-11-05');
+    expect(planDateFor('2026-12', 31)).toBe('2026-12-31');
+  });
+  it('selisih anggaran per jenis', async () => {
+    const { budgetGap } = await import('./finance');
+    expect(budgetGap('expense', 1000, 800)).toBe(200);
+    expect(budgetGap('expense', 1000, 1200)).toBe(-200);
+    expect(budgetGap('income', 1000, 1200)).toBe(200);
+    expect(budgetGap('income', 1000, 900)).toBe(-100);
+  });
+});

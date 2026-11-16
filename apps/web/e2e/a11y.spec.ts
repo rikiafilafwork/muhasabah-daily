@@ -100,6 +100,8 @@ for (const scheme of ['light', 'dark'] as const) {
       ['/memorization', 'Rencana baru'],
       ['/finance', 'Catat'],
       ['/finance', 'Kategori'],
+      ['/finance', 'Template'],
+      ['/finance', '+ Rencana'],
     ] as const;
     for (const [url, button] of DIALOGS) {
       await test.step(`dialog ${button}`, async () => {

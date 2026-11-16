@@ -108,11 +108,15 @@ export class FinanceCategoriesService {
     const inUse = () =>
       new AppException(
         ErrorCode.FINANCE_CATEGORY_IN_USE,
-        'Kategori masih dipakai transaksi. Arsipkan saja agar riwayat tetap utuh.',
+        'Kategori masih dipakai transaksi, template, atau rencana. Arsipkan saja agar riwayat tetap utuh.',
         HttpStatus.CONFLICT,
       );
-    const used = await this.prisma.financeTransaction.count({ where: { categoryId: id } });
-    if (used > 0) throw inUse();
+    const [txs, template, plans] = await Promise.all([
+      this.prisma.financeTransaction.count({ where: { categoryId: id } }),
+      this.prisma.financeTemplateItem.count({ where: { categoryId: id } }),
+      this.prisma.financePlan.count({ where: { categoryId: id } }),
+    ]);
+    if (txs + template + plans > 0) throw inUse();
     try {
       await this.prisma.financeCategory.delete({ where: { id } });
     } catch (err) {

@@ -1,4 +1,12 @@
 import type {
+  ApplyTemplateResult,
+  CreatePlanInput,
+  CreateTemplateItemInput,
+  FinancePlan,
+  FinanceTemplateItem,
+  RealizePlanInput,
+  UpdatePlanInput,
+  UpdateTemplateItemInput,
   CreateFinanceCategoryInput,
   CreateTransactionInput,
   FinanceCategory,
@@ -33,4 +41,25 @@ export const financeApi = {
   summary: (month?: string) => http.get<FinanceSummary>('/finance/summary', { query: { month } }),
   monthly: (to?: string, months = 12) =>
     http.get<FinanceMonthly>('/finance/monthly', { query: { to, months } }),
+};
+
+export const budgetApi = {
+  template: () => http.get<Paginated<FinanceTemplateItem>>('/finance/template'),
+  createTemplateItem: (input: CreateTemplateItemInput) =>
+    http.post<FinanceTemplateItem>('/finance/template', input),
+  updateTemplateItem: (id: string, input: UpdateTemplateItemInput) =>
+    http.patch<FinanceTemplateItem>(`/finance/template/${id}`, input),
+  removeTemplateItem: (id: string) => http.delete<void>(`/finance/template/${id}`),
+
+  plans: (month: string) =>
+    http.get<Paginated<FinancePlan>>('/finance/plans', { query: { month } }),
+  applyTemplate: (month: string) =>
+    http.post<ApplyTemplateResult>('/finance/plans/apply-template', { month }),
+  createPlan: (input: CreatePlanInput) => http.post<FinancePlan>('/finance/plans', input),
+  updatePlan: (id: string, input: UpdatePlanInput) =>
+    http.patch<FinancePlan>(`/finance/plans/${id}`, input),
+  removePlan: (id: string) => http.delete<void>(`/finance/plans/${id}`),
+  realize: (id: string, input: RealizePlanInput) =>
+    http.post<Transaction>(`/finance/plans/${id}/realize`, input),
+  unrealize: (id: string) => http.delete<FinancePlan>(`/finance/plans/${id}/realize`),
 };

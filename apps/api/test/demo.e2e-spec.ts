@@ -49,6 +49,9 @@ describe('Data contoh (integrasi)', () => {
     expect(finance.byCategory.length).toBeGreaterThan(2);
     const monthly = (await demo.get('/finance/monthly?months=3').expect(200)).body;
     expect(monthly.months.every((m: { income: number }) => m.income > 0)).toBe(true);
+    expect(finance.planned.expense).toBeGreaterThan(0);
+    expect(finance.plans.done).toBeGreaterThan(0);
+    expect((await demo.get('/finance/template').expect(200)).body.items).toHaveLength(7);
 
     const dhikr = (await demo.get('/dhikr/summary').expect(200)).body;
     expect(

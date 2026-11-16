@@ -1,5 +1,12 @@
 import { createZodDto } from 'nestjs-zod';
 import {
+  applyTemplateSchema,
+  createPlanSchema,
+  createTemplateItemSchema,
+  plansQuerySchema,
+  realizePlanSchema,
+  updatePlanSchema,
+  updateTemplateItemSchema,
   createFinanceCategorySchema,
   createTransactionSchema,
   financeCategoriesQuerySchema,
@@ -18,3 +25,11 @@ export class UpdateTransactionDto extends createZodDto(updateTransactionSchema) 
 export class TransactionsQueryDto extends createZodDto(transactionsQuerySchema) {}
 export class FinanceSummaryQueryDto extends createZodDto(financeSummaryQuerySchema) {}
 export class FinanceMonthlyQueryDto extends createZodDto(financeMonthlyQuerySchema) {}
+
+export class CreateTemplateItemDto extends createZodDto(createTemplateItemSchema) {}
+export class UpdateTemplateItemDto extends createZodDto(updateTemplateItemSchema) {}
+export class CreatePlanDto extends createZodDto(createPlanSchema) {}
+export class UpdatePlanDto extends createZodDto(updatePlanSchema) {}
+export class PlansQueryDto extends createZodDto(plansQuerySchema) {}
+export class ApplyTemplateDto extends createZodDto(applyTemplateSchema) {}
+export class RealizePlanDto extends createZodDto(realizePlanSchema) {}

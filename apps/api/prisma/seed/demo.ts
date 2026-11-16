@@ -12,6 +12,7 @@ import {
   addDays,
   addMonths,
   monthRange,
+  planDateFor,
   buildTikrarStages,
   extractRichDoc,
   formatAyahRef,
@@ -429,6 +430,51 @@ export async function seedDemo(prisma: PrismaClient, now: Date = new Date()): Pr
       note: t.note ?? null,
     })),
   });
+
+  // Template bulanan diterapkan ke tiga bulan; rencana yang transaksinya sudah ada
+  // (catatan = nama item) ditautkan sebagai realisasi. Listrik sengaja dianggarkan lebih
+  // kecil dari tagihannya agar selisih terlihat.
+  const templateSpecs = [
+    { name: 'Gaji bulanan', category: 'Gaji', amount: 8_500_000, day: 1 },
+    { name: 'Zakat penghasilan', category: 'Zakat', amount: 212_500, day: 2 },
+    { name: 'Listrik dan air', category: 'Tagihan', amount: 400_000, day: 3 },
+    { name: 'Internet', category: 'Tagihan', amount: 300_000, day: 5 },
+    { name: 'Kotak infak masjid', category: 'Sedekah & infak', amount: 100_000, day: 7 },
+    { name: 'Kursus bahasa Arab', category: 'Pendidikan', amount: 350_000, day: 10 },
+    { name: 'Belanja bulanan', category: 'Belanja', amount: 600_000, day: 25 },
+  ];
+  for (const [position, t] of templateSpecs.entries()) {
+    const item = await prisma.financeTemplateItem.create({
+      data: {
+        userId,
+        categoryId: cats[t.category]!,
+        name: t.name,
+        amount: BigInt(t.amount),
+        dayOfMonth: t.day,
+        position,
+      },
+    });
+    for (let back = 2; back >= 0; back--) {
+      const m = addMonths(thisMonth, -back);
+      const tx = await prisma.financeTransaction.findFirst({
+        where: { userId, note: t.name, date: { gte: d(`${m}-01`), lte: d(monthRange(m).to) } },
+        select: { id: true },
+      });
+      await prisma.financePlan.create({
+        data: {
+          userId,
+          categoryId: cats[t.category]!,
+          type: DEFAULT_FINANCE_CATEGORIES.find((c) => c.name === t.category)!.type,
+          name: t.name,
+          amount: BigInt(t.amount),
+          date: d(planDateFor(m, t.day)),
+          month: m,
+          templateItemId: item.id,
+          transactionId: tx?.id ?? null,
+        },
+      });
+    }
+  }
 
   return { userId, email: DEMO_EMAIL, password: DEMO_PASSWORD };
 }

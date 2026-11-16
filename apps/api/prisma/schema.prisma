@@ -65,6 +65,8 @@ model User {
   pushSubscriptions PushSubscription[]
   financeCategories FinanceCategory[]
   transactions      FinanceTransaction[]
+  financeTemplate   FinanceTemplateItem[]
+  financePlans      FinancePlan[]
 
   @@map("users")
 }
@@ -364,7 +366,7 @@ model MemorizationPlan {
   updatedAt     DateTime @updatedAt @db.Timestamptz(3)
 
   user   User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  surah  Surah               @relation(fields: [surahId], references: [id], onDelete: NoAction)
+  surah  Surah               @relation(fields: [surahId], references: [id], onDelete: Restrict)
   stages MemorizationStage[]
 
   @@index([userId, archived, createdAt])
@@ -480,8 +482,10 @@ model FinanceCategory {
   createdAt DateTime        @default(now()) @db.Timestamptz(3)
   updatedAt DateTime        @updatedAt @db.Timestamptz(3)
 
-  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactions FinanceTransaction[]
+  user          User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions  FinanceTransaction[]
+  templateItems FinanceTemplateItem[]
+  plans         FinancePlan[]
 
   @@unique([userId, type, name])
   @@map("finance_categories")
@@ -503,8 +507,57 @@ model FinanceTransaction {
 
   user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   category FinanceCategory @relation(fields: [categoryId], references: [id], onDelete: NoAction)
+  plan     FinancePlan?
 
   @@index([userId, date])
   @@index([userId, categoryId])
   @@map("finance_transactions")
+}
+
+/// Item template bulanan (satu template per pengguna). Diterapkan menjadi FinancePlan per bulan.
+model FinanceTemplateItem {
+  id         String   @id @default(cuid())
+  userId     String
+  categoryId String
+  name       String
+  amount     BigInt
+  /// 1–31; dipotong ke akhir bulan saat diterapkan.
+  dayOfMonth Int
+  position   Int      @default(0)
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(3)
+
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category FinanceCategory @relation(fields: [categoryId], references: [id], onDelete: NoAction)
+  plans    FinancePlan[]
+
+  @@index([userId])
+  @@map("finance_template_items")
+}
+
+/// Rencana (anggaran) satu bulan. Terjadi bila tertaut ke transaksi; menghapus transaksi
+/// mengembalikannya ke belum terjadi.
+model FinancePlan {
+  id             String          @id @default(cuid())
+  userId         String
+  categoryId     String
+  type           TransactionType
+  name           String
+  amount         BigInt
+  /// Tanggal lokal rencana; `month` = YYYY-MM dari tanggal ini.
+  date           DateTime        @db.Date
+  month          String          @db.Char(7)
+  templateItemId String?
+  transactionId  String?         @unique
+  createdAt      DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime        @updatedAt @db.Timestamptz(3)
+
+  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category     FinanceCategory      @relation(fields: [categoryId], references: [id], onDelete: NoAction)
+  templateItem FinanceTemplateItem? @relation(fields: [templateItemId], references: [id], onDelete: SetNull)
+  transaction  FinanceTransaction?  @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+
+  @@unique([templateItemId, month])
+  @@index([userId, month])
+  @@map("finance_plans")
 }

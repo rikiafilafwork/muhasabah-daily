@@ -213,6 +213,9 @@ erDiagram
   User ||--o{ LectureNote : has
   User ||--o{ FinanceCategory : has
   FinanceCategory ||--o{ FinanceTransaction : groups
+  User ||--o{ FinanceTemplateItem : has
+  FinanceTemplateItem ||--o{ FinancePlan : "diterapkan"
+  FinancePlan |o--o| FinanceTransaction : "realisasi"
   Surah ||--o{ Ayah : contains
 ```
 
@@ -224,6 +227,7 @@ erDiagram
 - `Task.focusToday` boolean, di-reset lewat job harian atau dihitung dari `focusDate`.
 - `Surah` dan `Ayah` diisi oleh seeder, bersifat baca-saja. Kolom: `arabic`, `latin`, `translationId`, `audioUrl`. File audio tidak disimpan.
 - `FinanceTransaction.amount` adalah `BigInt` dalam Rupiah utuh (1 sampai 999.999.999.999) dan `date` tanggal lokal pengguna. `type` disalin dari kategori saat disimpan; jenis kategori tidak bisa diubah. Kategori yang sudah dipakai hanya bisa diarsipkan (FK `NO ACTION`, sehingga hapus akun tetap ber-cascade).
+- `FinancePlan` (rencana/anggaran) unik pada `(templateItemId, month)` sehingga menerapkan template berulang tidak menggandakan item; `transactionId` unik dan `SET NULL` saat transaksinya dihapus (rencana kembali belum terjadi). Mengubah atau menghapus item template tidak mengubah rencana yang sudah dibuat.
 - Hapus akun menghapus seluruh data pengguna (cascade).
 
 ### 6.3 Cuplikan skema Prisma
@@ -281,6 +285,9 @@ Awalan `/api/v1`. Semua endpoint di bawah butuh token kecuali `/auth/*` dan `/he
 | Keuangan     | `GET/POST /finance/categories`, `PATCH/DELETE /finance/categories/:id`                                           | Kategori bawaan dibuat saat pertama dibuka; hapus ditolak 409 bila sudah dipakai                      |
 | Keuangan     | `GET/POST /finance/transactions`, `GET/PATCH/DELETE /finance/transactions/:id`                                   | Filter `month` (bawaan bulan berjalan), `type`, `categoryId`; paginasi kursor                         |
 | Keuangan     | `GET /finance/summary?month=`, `GET /finance/monthly?to=&months=`                                                | Total, selisih, bulan lalu, rincian kategori; deret bulanan untuk grafik (maks. 24 bulan)             |
+| Keuangan     | `GET/POST /finance/template`, `PATCH/DELETE /finance/template/:id`                                               | Satu template bulanan per pengguna (maks. 100 item); `dayOfMonth` 1–31                                |
+| Keuangan     | `GET/POST /finance/plans`, `PATCH/DELETE /finance/plans/:id`, `POST /finance/plans/apply-template`               | Rencana per bulan; terapkan template aman diulang (`created`/`skipped`)                               |
+| Keuangan     | `POST/DELETE /finance/plans/:id/realize`                                                                         | Catat realisasi sebagai transaksi (nominal boleh beda); 409 bila sudah/belum tercatat                 |
 | Sistem       | `GET /health`                                                                                                    | Cek API, database, Redis                                                                              |
 
 Konvensi: `PATCH` untuk perubahan sebagian, `PUT` pada sumber daya yang kuncinya sudah diketahui (tanggal), kursor untuk paginasi daftar panjang.
@@ -359,6 +366,8 @@ Log habit dihitung sejak `startDate` goal (default tanggal goal dibuat), sehingg
 
 - Nominal dikirim dan disimpan sebagai bilangan bulat Rupiah; web memformat dengan `formatRupiah` dan mengurai isian (`1.500.000`, `Rp 25.000`) dengan `parseRupiah` dari `packages/shared`.
 - Ringkasan bulan dihitung di PostgreSQL (`groupBy` per jenis dan per kategori untuk bulan itu dan bulan sebelumnya); deret bulanan memakai satu kueri `GROUP BY to_char(date, 'YYYY-MM'), type` dan mengisi bulan kosong dengan 0.
+- **Rencana vs real:** ringkasan menyertakan `planned` (total rencana per jenis), hitungan rencana (tercatat, belum, terlambat), dan `planned` per kategori. Real tetap mencakup semua transaksi, termasuk yang di luar rencana. Selisih anggaran (`budgetGap`): pengeluaran `rencana − real` (negatif = melebihi), pemasukan `real − rencana`.
+- Menerapkan template memakai `createMany … skipDuplicates`; tanggal di luar panjang bulan (mis. 31 di Februari) dipotong ke hari terakhir (`planDateFor`). Realisasi dibuat dalam transaksi basis data dengan klaim bersyarat (`transactionId IS NULL`) agar klik ganda tidak membuat dua transaksi.
 - Bulan mengikuti kolom `date` (tanggal lokal), jadi batas bulan tidak bergeser oleh zona waktu server.
 - Grafik 12 bulan memakai dua seri berdampingan (pemasukan selalu di kiri) dengan warna yang lolos uji buta warna, legenda, dan tabel tersembunyi untuk pembaca layar.
 
@@ -518,25 +527,26 @@ Job `docker` membangun image API dan web (tanpa push) untuk memastikan `docker c
 
 ## 15. Catatan keputusan (ADR ringkas)
 
-| #   | Keputusan                                                               | Alasan                                                                                      | Konsekuensi                                                                                                   |
-| --- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| 1   | Vue 3 + Vite tanpa SSR                                                  | Tidak ada situs publik yang perlu SEO                                                       | Lebih sederhana, tidak ada landing page terpisah                                                              |
-| 2   | NestJS 11 + Prisma 7 + PostgreSQL                                       | Satu bahasa, skema bertipe, struktur modul jelas                                            | Perlu disiplin batas modul agar tidak saling bergantung                                                       |
-| 3   | Monorepo pnpm dengan `packages/shared`                                  | Tipe dan validasi dipakai bersama                                                           | Perlu build paket shared sebelum app (skrip root menanganinya)                                                |
-| 4   | Data Al-Qur'an di-seed, tidak di-commit                                 | Menghindari masalah lisensi dan ukuran repo                                                 | Pengguna perlu menjalankan seeder sekali                                                                      |
-| 5   | Audio di-stream dari sumber                                             | Tidak menyimpan audio                                                                       | Bergantung pada ketersediaan sumber, perlu penanganan error di pemutar                                        |
-| 6   | AI opsional lewat API key sendiri                                       | Tidak ada biaya yang ditanggung proyek                                                      | Fitur tidak tersedia tanpa kunci                                                                              |
-| 7   | Tanggal harian disimpan sebagai tanggal lokal                           | Streak dan log harian tidak bergeser di batas hari                                          | Perubahan zona waktu pengguna perlu penanganan khusus                                                         |
-| 8   | Refresh token di cookie `httpOnly`                                      | Mengurangi risiko pencurian token lewat XSS                                                 | Perlu konfigurasi CORS dan cookie yang benar; dev memakai proxy Vite                                          |
-| 9   | Validasi dengan Zod + `nestjs-zod`                                      | Satu skema untuk form web dan DTO API                                                       | Swagger dihasilkan dari skema zod                                                                             |
-| 10  | Worker BullMQ menyatu dengan proses API (v0.1)                          | Lebih sederhana untuk dijalankan lokal                                                      | Dapat dipisah ke entry point sendiri pada fase 6                                                              |
-| 11  | AI Polish lewat antarmuka `AiProvider`, Anthropic sebagai bawaan        | Satu implementasi teruji, penyedia lain cukup menambah kelas                                | Hanya Anthropic yang tersedia sekarang; model dan kunci milik pengguna                                        |
-| 12  | Data Al-Qur'an diimpor lewat antrean `seed`                             | Sesuai rancangan worker; progres terlihat                                                   | Butuh API berjalan, atau mode `--direct`                                                                      |
-| 13  | `docker compose up` menyiapkan semuanya, secret dibuat otomatis         | Satu perintah untuk pengguna awam                                                           | Secret tersimpan di volume; cadangkan bersama data bila perlu                                                 |
-| 14  | Web produksi disajikan nginx yang meneruskan `/api`                     | Satu origin: cookie refresh dan CORS sederhana                                              | Port API tidak dibuka ke host                                                                                 |
-| 16  | Pengingat lewat Web Push (VAPID) dan job BullMQ tiap menit              | Notifikasi tetap muncul walau tab ditutup; dedupe di basis data (agenda) dan Redis (sholat) | Butuh HTTPS/localhost; melewati layanan push browser (terenkripsi); endpoint dibatasi ke layanan push dikenal |
-| 15  | Prisma 7: generator `prisma-client` (CommonJS) dan `@prisma/adapter-pg` | Tanpa engine Rust, klien bertipe ikut dikompilasi bersama API                               | Klien dibuat ke `src/generated/prisma` (tidak di-commit); URL koneksi diatur di `prisma.config.ts`            |
-| 17  | Keuangan: Rupiah utuh sebagai `BigInt`, satu mata uang, tanpa dompet    | Tanpa galat pembulatan float; lingkup awal sederhana                                        | Multi-mata uang, dompet, dan anggaran butuh migrasi tambahan bila kelak dibuat                                |
+| #   | Keputusan                                                               | Alasan                                                                                         | Konsekuensi                                                                                                   |
+| --- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| 1   | Vue 3 + Vite tanpa SSR                                                  | Tidak ada situs publik yang perlu SEO                                                          | Lebih sederhana, tidak ada landing page terpisah                                                              |
+| 2   | NestJS 11 + Prisma 7 + PostgreSQL                                       | Satu bahasa, skema bertipe, struktur modul jelas                                               | Perlu disiplin batas modul agar tidak saling bergantung                                                       |
+| 3   | Monorepo pnpm dengan `packages/shared`                                  | Tipe dan validasi dipakai bersama                                                              | Perlu build paket shared sebelum app (skrip root menanganinya)                                                |
+| 4   | Data Al-Qur'an di-seed, tidak di-commit                                 | Menghindari masalah lisensi dan ukuran repo                                                    | Pengguna perlu menjalankan seeder sekali                                                                      |
+| 5   | Audio di-stream dari sumber                                             | Tidak menyimpan audio                                                                          | Bergantung pada ketersediaan sumber, perlu penanganan error di pemutar                                        |
+| 6   | AI opsional lewat API key sendiri                                       | Tidak ada biaya yang ditanggung proyek                                                         | Fitur tidak tersedia tanpa kunci                                                                              |
+| 7   | Tanggal harian disimpan sebagai tanggal lokal                           | Streak dan log harian tidak bergeser di batas hari                                             | Perubahan zona waktu pengguna perlu penanganan khusus                                                         |
+| 8   | Refresh token di cookie `httpOnly`                                      | Mengurangi risiko pencurian token lewat XSS                                                    | Perlu konfigurasi CORS dan cookie yang benar; dev memakai proxy Vite                                          |
+| 9   | Validasi dengan Zod + `nestjs-zod`                                      | Satu skema untuk form web dan DTO API                                                          | Swagger dihasilkan dari skema zod                                                                             |
+| 10  | Worker BullMQ menyatu dengan proses API (v0.1)                          | Lebih sederhana untuk dijalankan lokal                                                         | Dapat dipisah ke entry point sendiri pada fase 6                                                              |
+| 11  | AI Polish lewat antarmuka `AiProvider`, Anthropic sebagai bawaan        | Satu implementasi teruji, penyedia lain cukup menambah kelas                                   | Hanya Anthropic yang tersedia sekarang; model dan kunci milik pengguna                                        |
+| 12  | Data Al-Qur'an diimpor lewat antrean `seed`                             | Sesuai rancangan worker; progres terlihat                                                      | Butuh API berjalan, atau mode `--direct`                                                                      |
+| 13  | `docker compose up` menyiapkan semuanya, secret dibuat otomatis         | Satu perintah untuk pengguna awam                                                              | Secret tersimpan di volume; cadangkan bersama data bila perlu                                                 |
+| 14  | Web produksi disajikan nginx yang meneruskan `/api`                     | Satu origin: cookie refresh dan CORS sederhana                                                 | Port API tidak dibuka ke host                                                                                 |
+| 16  | Pengingat lewat Web Push (VAPID) dan job BullMQ tiap menit              | Notifikasi tetap muncul walau tab ditutup; dedupe di basis data (agenda) dan Redis (sholat)    | Butuh HTTPS/localhost; melewati layanan push browser (terenkripsi); endpoint dibatasi ke layanan push dikenal |
+| 15  | Prisma 7: generator `prisma-client` (CommonJS) dan `@prisma/adapter-pg` | Tanpa engine Rust, klien bertipe ikut dikompilasi bersama API                                  | Klien dibuat ke `src/generated/prisma` (tidak di-commit); URL koneksi diatur di `prisma.config.ts`            |
+| 18  | Anggaran = rencana per bulan yang disalin dari satu template bulanan    | Bulan lama tidak berubah saat template diubah; selisih per item dan per kategori bisa dihitung | Perubahan template hanya berlaku untuk bulan yang diterapkan sesudahnya; satu template per pengguna           |
+| 17  | Keuangan: Rupiah utuh sebagai `BigInt`, satu mata uang, tanpa dompet    | Tanpa galat pembulatan float; lingkup awal sederhana                                           | Multi-mata uang, dompet, dan anggaran butuh migrasi tambahan bila kelak dibuat                                |
 
 ## 16. Pemetaan ke fase pengerjaan
 

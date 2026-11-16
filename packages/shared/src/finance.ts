@@ -180,6 +180,8 @@ export interface Transaction {
   date: string;
   note: string | null;
   category: { id: string; name: string; color: Color };
+  /** Rencana yang direalisasikan oleh transaksi ini, bila ada. */
+  planId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -210,18 +212,119 @@ export interface FinanceCategoryTotal {
   name: string;
   color: Color;
   type: TransactionType;
+  /** Total transaksi (real). */
   total: number;
   count: number;
+  /** Total rencana pada kategori ini. */
+  planned: number;
 }
 
 export interface FinanceSummary extends MonthTotals {
   transactionCount: number;
   previous: MonthTotals;
-  /** Total per kategori, terbesar dulu. */
+  /** Total rencana (anggaran) bulan ini; `balance` = rencana pemasukan − rencana pengeluaran. */
+  planned: MonthTotals;
+  plans: FinancePlanCounts;
+  /** Total per kategori (real dan rencana), terbesar dulu. */
   byCategory: FinanceCategoryTotal[];
+}
+
+export interface FinancePlanCounts {
+  total: number;
+  done: number;
+  pending: number;
+  /** Belum terjadi padahal tanggalnya sudah lewat. */
+  overdue: number;
 }
 
 export interface FinanceMonthly {
   /** Urut dari bulan terlama ke terbaru; bulan tanpa transaksi bernilai 0. */
   months: MonthTotals[];
+}
+
+// ---- Template bulanan dan rencana (anggaran) ----
+
+const planNameSchema = z.string().trim().min(1, 'Nama wajib diisi').max(80);
+
+export const createTemplateItemSchema = z
+  .object({
+    name: planNameSchema,
+    categoryId: idSchema,
+    amount: amountSchema,
+    /** Tanggal dalam bulan; bila bulan lebih pendek dipakai tanggal terakhir. */
+    dayOfMonth: z
+      .number({ error: 'Tanggal wajib diisi' })
+      .int()
+      .min(1, 'Tanggal 1–31')
+      .max(31, 'Tanggal 1–31'),
+  })
+  .strict();
+export type CreateTemplateItemInput = z.input<typeof createTemplateItemSchema>;
+export const updateTemplateItemSchema = createTemplateItemSchema.partial().strict();
+export type UpdateTemplateItemInput = z.infer<typeof updateTemplateItemSchema>;
+
+export const FINANCE_TEMPLATE_MAX_ITEMS = 100;
+
+export interface FinanceTemplateItem {
+  id: string;
+  name: string;
+  type: TransactionType;
+  amount: number;
+  dayOfMonth: number;
+  category: { id: string; name: string; color: Color };
+  position: number;
+}
+
+/** Tanggal rencana dari `dayOfMonth` pada bulan tertentu, dipotong ke akhir bulan. */
+export function planDateFor(month: string, dayOfMonth: number): string {
+  const last = Number(monthRange(month).to.slice(8, 10));
+  return `${month}-${String(Math.min(dayOfMonth, last)).padStart(2, '0')}`;
+}
+
+export const createPlanSchema = z
+  .object({ name: planNameSchema, categoryId: idSchema, amount: amountSchema, date: isoDateSchema })
+  .strict();
+export type CreatePlanInput = z.input<typeof createPlanSchema>;
+export const updatePlanSchema = createPlanSchema.partial().strict();
+export type UpdatePlanInput = z.infer<typeof updatePlanSchema>;
+
+export const plansQuerySchema = z.object({ month: monthSchema.optional() }).strict();
+export const applyTemplateSchema = z.object({ month: monthSchema }).strict();
+
+/** Mencatat realisasi rencana sebagai transaksi; nominal boleh berbeda dari rencana. */
+export const realizePlanSchema = z
+  .object({ amount: amountSchema, date: isoDateSchema, note: optionalText(300) })
+  .strict();
+export type RealizePlanInput = z.input<typeof realizePlanSchema>;
+
+export type FinancePlanStatus = 'pending' | 'done';
+
+export interface FinancePlan {
+  id: string;
+  name: string;
+  type: TransactionType;
+  amount: number;
+  date: string;
+  month: string;
+  category: { id: string; name: string; color: Color };
+  templateItemId: string | null;
+  status: FinancePlanStatus;
+  transaction: { id: string; amount: number; date: string } | null;
+  /** Real − rencana bila sudah terjadi, selain itu `null`. */
+  difference: number | null;
+}
+
+export interface ApplyTemplateResult {
+  created: number;
+  /** Item template yang sudah ada di bulan itu. */
+  skipped: number;
+  items: FinancePlan[];
+}
+
+/**
+ * Selisih anggaran: untuk pengeluaran `rencana − real` (positif = masih tersisa),
+ * untuk pemasukan `real − rencana` (positif = melebihi rencana).
+ */
+export function budgetGap(type: TransactionType, planned: number, actual: number): number {
+  return type === 'expense' ? planned - actual : actual - planned;
 }

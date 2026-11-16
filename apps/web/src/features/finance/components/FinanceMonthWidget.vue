@@ -29,6 +29,12 @@ onMounted(async () => {
       <div>
         <dt class="text-xs text-stone-500 dark:text-stone-400">Pengeluaran</dt>
         <dd class="mt-0.5 font-semibold tabular-nums">{{ formatRupiah(summary.expense) }}</dd>
+        <dd
+          v-if="summary.planned.expense"
+          class="text-xs text-stone-500 tabular-nums dark:text-stone-400"
+        >
+          dari {{ formatRupiah(summary.planned.expense) }}
+        </dd>
       </div>
       <div>
         <dt class="text-xs text-stone-500 dark:text-stone-400">Selisih</dt>
@@ -43,5 +49,19 @@ onMounted(async () => {
       </div>
     </dl>
     <p v-else class="text-sm text-stone-500 dark:text-stone-400">Belum ada data.</p>
+    <RouterLink
+      v-if="summary && summary.plans.pending"
+      to="/finance"
+      :class="[
+        'mt-3 block text-sm hover:underline',
+        summary.plans.overdue
+          ? 'text-rose-700 dark:text-rose-400'
+          : 'text-stone-600 dark:text-stone-300',
+      ]"
+    >
+      {{ summary.plans.pending }} rencana belum tercatat<template v-if="summary.plans.overdue"
+        >, {{ summary.plans.overdue }} terlambat</template
+      >
+    </RouterLink>
   </UiCard>
 </template>
