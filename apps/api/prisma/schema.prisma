@@ -63,6 +63,8 @@ model User {
   journalEntries    JournalEntry[]
   lectureNotes      LectureNote[]
   pushSubscriptions PushSubscription[]
+  financeCategories FinanceCategory[]
+  transactions      FinanceTransaction[]
 
   @@map("users")
 }
@@ -362,7 +364,7 @@ model MemorizationPlan {
   updatedAt     DateTime @updatedAt @db.Timestamptz(3)
 
   user   User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  surah  Surah               @relation(fields: [surahId], references: [id], onDelete: Restrict)
+  surah  Surah               @relation(fields: [surahId], references: [id], onDelete: NoAction)
   stages MemorizationStage[]
 
   @@index([userId, archived, createdAt])
@@ -458,4 +460,51 @@ model PushSubscription {
 
   @@index([userId])
   @@map("push_subscriptions")
+}
+
+enum TransactionType {
+  income
+  expense
+}
+
+/// Kategori pemasukan/pengeluaran milik pengguna. Bawaan dibuat saat pertama dibuka.
+/// Jenis tidak bisa diubah; kategori yang sudah dipakai diarsipkan, bukan dihapus.
+model FinanceCategory {
+  id        String          @id @default(cuid())
+  userId    String
+  type      TransactionType
+  name      String
+  color     Color           @default(slate)
+  archived  Boolean         @default(false)
+  position  Int             @default(0)
+  createdAt DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime        @updatedAt @db.Timestamptz(3)
+
+  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions FinanceTransaction[]
+
+  @@unique([userId, type, name])
+  @@map("finance_categories")
+}
+
+/// Satu pemasukan atau pengeluaran. `type` disalin dari kategori agar agregasi tanpa join.
+model FinanceTransaction {
+  id         String          @id @default(cuid())
+  userId     String
+  categoryId String
+  type       TransactionType
+  /// Rupiah utuh (tanpa desimal).
+  amount     BigInt
+  /// Tanggal lokal pengguna.
+  date       DateTime        @db.Date
+  note       String?
+  createdAt  DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime        @updatedAt @db.Timestamptz(3)
+
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category FinanceCategory @relation(fields: [categoryId], references: [id], onDelete: NoAction)
+
+  @@index([userId, date])
+  @@index([userId, categoryId])
+  @@map("finance_transactions")
 }

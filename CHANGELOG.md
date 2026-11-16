@@ -4,6 +4,10 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/id-ID/1.1.0/) dan
 
 ## [Belum dirilis]
 
+### Ditambahkan
+
+- **Keuangan:** catat pemasukan dan pengeluaran dalam Rupiah dengan tanggal, kategori, dan catatan. Ringkasan per bulan menampilkan total pemasukan, pengeluaran, selisih, perbandingan dengan bulan lalu, dan rincian per kategori; grafik 12 bulan terakhir; kartu "Keuangan bulan ini" di Beranda. Kategori bawaan (mis. Gaji, Makan, Tagihan, Sedekah & infak, Zakat) dibuat otomatis dan bisa ditambah, diubah, atau diarsipkan. Data contoh `seed:demo` menyertakan transaksi tiga bulan.
+
 ## [1.2.0] — 2026-11-15
 
 ### Ditambahkan

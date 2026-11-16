@@ -20,6 +20,7 @@ import { QuranModule } from './modules/quran/quran.module';
 import { RemindersModule } from './modules/reminders/reminders.module';
 import { DhikrModule } from './modules/dhikr/dhikr.module';
 import { EventsModule } from './modules/events/events.module';
+import { FinanceModule } from './modules/finance/finance.module';
 import { FocusModule } from './modules/focus/focus.module';
 import { GoalsModule } from './modules/goals/goals.module';
 import { HabitsModule } from './modules/habits/habits.module';
@@ -88,6 +89,7 @@ const REQUEST_ID_PATTERN = /^[\w-]{1,64}$/;
     JournalModule,
     LectureNotesModule,
     RemindersModule,
+    FinanceModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },

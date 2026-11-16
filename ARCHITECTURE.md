@@ -74,7 +74,9 @@ muhasabah-daily/
 │  │  │     ├─ quran/          # fase 5, data ayat, bukan fitur hafalan
 │  │  │     ├─ memorization/   # Hafidz (fase 5)
 │  │  │     ├─ journal/        # + AI Polish (fase 5)
-│  │  │     └─ lecture-notes/  # fase 5
+│  │  │     ├─ lecture-notes/  # fase 5
+│  │  │     ├─ reminders/      # Web Push (v1.2)
+│  │  │     └─ finance/        # Keuangan (v1.3)
 │  │  ├─ prisma/
 │  │  │  ├─ schema.prisma
 │  │  │  ├─ migrations/
@@ -128,6 +130,7 @@ Aturan ketergantungan: `web` dan `api` boleh memakai `packages/shared`. `web` ti
 | memorization  | Rencana hafalan dan tahap tikrar                           | 5    |
 | journal       | Jurnal harian dan AI Polish                                | 5    |
 | lecture-notes | Catatan kajian dengan rujukan ayat                         | 5    |
+| finance       | Kategori, pemasukan/pengeluaran, ringkasan bulanan         | v1.3 |
 
 ### 4.3 Autentikasi dan sesi
 
@@ -208,6 +211,8 @@ erDiagram
   MemorizationPlan ||--o{ MemorizationStage : has
   User ||--o{ JournalEntry : has
   User ||--o{ LectureNote : has
+  User ||--o{ FinanceCategory : has
+  FinanceCategory ||--o{ FinanceTransaction : groups
   Surah ||--o{ Ayah : contains
 ```
 
@@ -218,6 +223,7 @@ erDiagram
 - `JournalEntry`: unik pada `(userId, date)`. Menyimpan `rawText` dan `polishedText` (nullable).
 - `Task.focusToday` boolean, di-reset lewat job harian atau dihitung dari `focusDate`.
 - `Surah` dan `Ayah` diisi oleh seeder, bersifat baca-saja. Kolom: `arabic`, `latin`, `translationId`, `audioUrl`. File audio tidak disimpan.
+- `FinanceTransaction.amount` adalah `BigInt` dalam Rupiah utuh (1 sampai 999.999.999.999) dan `date` tanggal lokal pengguna. `type` disalin dari kategori saat disimpan; jenis kategori tidak bisa diubah. Kategori yang sudah dipakai hanya bisa diarsipkan (FK `NO ACTION`, sehingga hapus akun tetap ber-cascade).
 - Hapus akun menghapus seluruh data pengguna (cascade).
 
 ### 6.3 Cuplikan skema Prisma
@@ -272,6 +278,9 @@ Awalan `/api/v1`. Semua endpoint di bawah butuh token kecuali `/auth/*` dan `/he
 | Hafidz       | `GET/POST /memorization-plans`, `GET/PATCH/DELETE /memorization-plans/:id`, `PUT /memorization-plans/:id/stages` | `PATCH` menyimpan progres (`currentStage`); `PUT stages` mengganti tahapan dan menyetel ulang progres |
 | Jurnal       | `GET /journal?from=&to=`, `GET/PUT /journal/:date`, `POST/DELETE /journal/:date/polish`, `GET /ai/status`        | `POST polish` mengembalikan 202, hasil lewat polling; `DELETE polish` membuang versi rapi             |
 | Kajian       | `GET/POST /lecture-notes`, `GET/PATCH/DELETE /lecture-notes/:id`                                                 | Pencarian `q`, paginasi kursor; isi berupa dokumen TipTap (JSON)                                      |
+| Keuangan     | `GET/POST /finance/categories`, `PATCH/DELETE /finance/categories/:id`                                           | Kategori bawaan dibuat saat pertama dibuka; hapus ditolak 409 bila sudah dipakai                      |
+| Keuangan     | `GET/POST /finance/transactions`, `GET/PATCH/DELETE /finance/transactions/:id`                                   | Filter `month` (bawaan bulan berjalan), `type`, `categoryId`; paginasi kursor                         |
+| Keuangan     | `GET /finance/summary?month=`, `GET /finance/monthly?to=&months=`                                                | Total, selisih, bulan lalu, rincian kategori; deret bulanan untuk grafik (maks. 24 bulan)             |
 | Sistem       | `GET /health`                                                                                                    | Cek API, database, Redis                                                                              |
 
 Konvensi: `PATCH` untuk perubahan sebagian, `PUT` pada sumber daya yang kuncinya sudah diketahui (tanggal), kursor untuk paginasi daftar panjang.
@@ -345,6 +354,13 @@ Log habit dihitung sejak `startDate` goal (default tanggal goal dibuat), sehingg
 - Konten (`dhikr_items`) diisi seeder dari `apps/api/prisma/seed/dhikr-content.ts`. Satu baris per grup (`pagi-ayat-kursi`, `petang-ayat-kursi`, …) sehingga hitungan pagi dan petang terpisah.
 - Untuk dzikir berupa ayat, seeder mengambil teks rasm Utsmani dan terjemah Kemenag dari AlQuran Cloud, lalu membandingkan dengan teks bawaan (normalisasi tanpa harakat). Tanpa internet (`seed --offline`) teks bawaan dipakai.
 - Hitungan dikirim sebagai nilai akhir (`PUT … { count }`), bukan selisih, 1 detik setelah ketukan terakhir. Nilai yang belum terkirim disimpan di `localStorage` per pengguna dan dikirim ulang saat `online`, setiap 20 detik, dan saat tab disembunyikan. Error 4xx dibuang agar antrean tidak macet; error jaringan/5xx diulang. Logika antrean murni ada di `apps/web/src/features/dhikr/sync-queue.ts`.
+
+### 8.3d Keuangan
+
+- Nominal dikirim dan disimpan sebagai bilangan bulat Rupiah; web memformat dengan `formatRupiah` dan mengurai isian (`1.500.000`, `Rp 25.000`) dengan `parseRupiah` dari `packages/shared`.
+- Ringkasan bulan dihitung di PostgreSQL (`groupBy` per jenis dan per kategori untuk bulan itu dan bulan sebelumnya); deret bulanan memakai satu kueri `GROUP BY to_char(date, 'YYYY-MM'), type` dan mengisi bulan kosong dengan 0.
+- Bulan mengikuti kolom `date` (tanggal lokal), jadi batas bulan tidak bergeser oleh zona waktu server.
+- Grafik 12 bulan memakai dua seri berdampingan (pemasukan selalu di kiri) dengan warna yang lolos uji buta warna, legenda, dan tabel tersembunyi untuk pembaca layar.
 
 ### 8.4 Seeding data Al-Qur'an
 
@@ -520,6 +536,7 @@ Job `docker` membangun image API dan web (tanpa push) untuk memastikan `docker c
 | 14  | Web produksi disajikan nginx yang meneruskan `/api`                     | Satu origin: cookie refresh dan CORS sederhana                                              | Port API tidak dibuka ke host                                                                                 |
 | 16  | Pengingat lewat Web Push (VAPID) dan job BullMQ tiap menit              | Notifikasi tetap muncul walau tab ditutup; dedupe di basis data (agenda) dan Redis (sholat) | Butuh HTTPS/localhost; melewati layanan push browser (terenkripsi); endpoint dibatasi ke layanan push dikenal |
 | 15  | Prisma 7: generator `prisma-client` (CommonJS) dan `@prisma/adapter-pg` | Tanpa engine Rust, klien bertipe ikut dikompilasi bersama API                               | Klien dibuat ke `src/generated/prisma` (tidak di-commit); URL koneksi diatur di `prisma.config.ts`            |
+| 17  | Keuangan: Rupiah utuh sebagai `BigInt`, satu mata uang, tanpa dompet    | Tanpa galat pembulatan float; lingkup awal sederhana                                        | Multi-mata uang, dompet, dan anggaran butuh migrasi tambahan bila kelak dibuat                                |
 
 ## 16. Pemetaan ke fase pengerjaan
 

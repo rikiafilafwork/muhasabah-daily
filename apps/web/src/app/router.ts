@@ -2,6 +2,7 @@ import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { authRoutes, useSessionStore } from '@/features/auth';
 import { dashboardRoutes } from '@/features/dashboard';
 import { dhikrRoutes } from '@/features/dhikr';
+import { financeRoutes } from '@/features/finance';
 import { focusRoutes } from '@/features/focus';
 import { journalRoutes } from '@/features/journal';
 import { landingRoutes } from '@/features/landing';
@@ -32,6 +33,7 @@ const routes: RouteRecordRaw[] = [
   ...habitsRoutes,
   ...goalsRoutes,
   ...focusRoutes,
+  ...financeRoutes,
   ...dhikrRoutes,
   ...memorizationRoutes,
   ...journalRoutes,

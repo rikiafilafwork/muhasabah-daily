@@ -54,6 +54,13 @@ export const NAV_ITEMS: NavItem[] = [
     icon: 'M12 7v5l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z',
   },
   {
+    label: 'Keuangan',
+    to: '/finance',
+    group: 'produktivitas',
+    hint: 'Pemasukan dan pengeluaran',
+    icon: 'M3 7a2 2 0 0 1 2-2h12v4M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2zM16 14.5h.01',
+  },
+  {
     label: 'Dzikir',
     to: '/dhikr',
     group: 'ibadah',

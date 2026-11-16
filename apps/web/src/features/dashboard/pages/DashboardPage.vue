@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { useSessionStore } from '@/features/auth';
 import { DhikrTodayWidget } from '@/features/dhikr';
+import { FinanceMonthWidget } from '@/features/finance';
 import { TodayHabitsWidget } from '@/features/habits';
 import { PrayerTimesCard } from '@/features/prayer-times';
 import { TodayAgendaWidget } from '@/features/schedule';
@@ -111,6 +112,7 @@ const SHORTCUTS = [
       <TodayHabitsWidget />
       <DhikrTodayWidget />
       <TodayAgendaWidget />
+      <FinanceMonthWidget class="md:col-span-2" />
     </div>
   </div>
 </template>

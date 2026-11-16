@@ -25,6 +25,7 @@ const SHOTS = [
   { name: 'habit', url: '/habits' },
   { name: 'goals', url: '/goals' },
   { name: 'fokus', url: '/focus' },
+  { name: 'keuangan', url: '/finance' },
   { name: 'dzikir', url: '/dhikr?group=pagi' },
   { name: 'hafidz', url: '/memorization' },
   { name: 'jurnal', url: '/journal' },

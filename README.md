@@ -17,6 +17,7 @@ Aplikasi produktivitas Muslim open source yang dijalankan di komputermu sendiri.
 - **Dzikir** pagi, petang, dan sebelum tidur dengan teks Arab, latin, terjemah, rujukan, dan penghitung yang tetap berjalan saat offline.
 - **Hafidz**: rencana hafalan dengan tahapan tikrar (dengar, baca sendiri, sambung) dan pemutar murottal per ayat.
 - **Jurnal** harian dengan simpan otomatis dan **AI Polish** opsional (Claude, kunci API milikmu) yang merapikan ejaan tanpa menimpa teks asli.
+- **Keuangan**: catat pemasukan dan pengeluaran per kategori, ringkasan bulanan (total, selisih, perbandingan dengan bulan lalu, rincian kategori), dan grafik 12 bulan.
 - **Catatan Kajian** dengan editor teks kaya dan rujukan ayat yang menampilkan teks Arab dan terjemah.
 - **Pengingat** lewat notifikasi (Web Push) saat waktu sholat masuk dan sebelum agenda dimulai; butuh HTTPS atau localhost.
 - **Mode offline**: aplikasi yang pernah dibuka tetap bisa dibuka dengan data terakhir saat server tidak terjangkau.
@@ -106,7 +107,7 @@ docker compose --profile full up --build
 ## Struktur
 
 ```
-apps/api         NestJS: auth, users, prayer-times, events, tasks, habits, goals, focus, dhikr, quran, memorization, journal + ai, lecture-notes, health
+apps/api         NestJS: auth, users, prayer-times, events, tasks, habits, goals, focus, dhikr, quran, memorization, journal + ai, lecture-notes, reminders, finance, health
 apps/web         Vue 3 SPA
 packages/shared  Tipe, kode error, dan skema zod yang dipakai web dan api
 ```

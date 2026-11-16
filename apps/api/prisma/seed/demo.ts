@@ -3,12 +3,15 @@
  *
  * Membuat (atau membuat ulang) satu akun demo dengan riwayat empat minggu yang
  * dihitung relatif terhadap hari ini: habit, tugas, goal, agenda, sesi fokus,
- * dan dzikir. Hasilnya deterministik (PRNG dengan seed tetap) agar tangkapan
+ * dzikir, dan keuangan. Hasilnya deterministik (PRNG dengan seed tetap) agar tangkapan
  * layar konsisten. Butuh `seed` dasar (template habit dan dzikir) lebih dulu.
  */
 import type { PrismaClient } from '../../src/generated/prisma/client';
 import {
+  DEFAULT_FINANCE_CATEGORIES,
   addDays,
+  addMonths,
+  monthRange,
   buildTikrarStages,
   extractRichDoc,
   formatAyahRef,
@@ -372,6 +375,60 @@ export async function seedDemo(prisma: PrismaClient, now: Date = new Date()): Pr
       },
     });
   }
+
+  // ---------------------------------------------------------------- Keuangan
+  // Tiga bulan terakhir (bulan ini sampai hari ini) agar ringkasan dan grafik terisi.
+  const cats: Record<string, string> = {};
+  for (const [position, c] of DEFAULT_FINANCE_CATEGORIES.entries()) {
+    const row = await prisma.financeCategory.create({ data: { ...c, userId, position } });
+    cats[c.name] = row.id;
+  }
+  const round = (n: number, step: number) => Math.round(n / step) * step;
+  const txs: {
+    name: string;
+    type: 'income' | 'expense';
+    amount: number;
+    date: string;
+    note?: string;
+  }[] = [];
+  const thisMonth = today.slice(0, 7);
+  for (let back = 2; back >= 0; back--) {
+    const m = addMonths(thisMonth, -back);
+    const { to } = monthRange(m);
+    const last = back === 0 ? today : to;
+    const inMonth = (dayOfMonth: number) => `${m}-${String(dayOfMonth).padStart(2, '0')}`;
+    const lastDay = Number(last.slice(8, 10));
+    const add = (name: string, amount: number, dayOfMonth: number, note?: string) => {
+      if (dayOfMonth > lastDay) return;
+      const type = DEFAULT_FINANCE_CATEGORIES.find((c) => c.name === name)!.type;
+      txs.push({ name, type, amount, date: inMonth(dayOfMonth), note });
+    };
+    add('Gaji', 8_500_000, 1, 'Gaji bulanan');
+    if (back !== 1) add('Usaha', round(1_200_000 + rand() * 900_000, 50_000), 14, 'Jualan buku');
+    add('Tagihan', 450_000, 3, 'Listrik dan air');
+    add('Tagihan', 300_000, 5, 'Internet');
+    add('Zakat', 212_500, 2, 'Zakat penghasilan');
+    add('Sedekah & infak', 100_000, 7, 'Kotak infak masjid');
+    add('Sedekah & infak', 150_000, 21, 'Santunan yatim');
+    add('Pendidikan', 350_000, 10, 'Kursus bahasa Arab');
+    for (let day = 1; day <= lastDay; day++) {
+      if (rand() < 0.75) add('Makan', round(25_000 + rand() * 60_000, 1000), day);
+      if (rand() < 0.35) add('Transportasi', round(15_000 + rand() * 40_000, 1000), day);
+      if (rand() < 0.12)
+        add('Belanja', round(80_000 + rand() * 400_000, 5000), day, 'Belanja bulanan');
+    }
+    if (back === 2) add('Kesehatan', 275_000, 18, 'Periksa gigi');
+  }
+  await prisma.financeTransaction.createMany({
+    data: txs.map((t) => ({
+      userId,
+      categoryId: cats[t.name]!,
+      type: t.type,
+      amount: BigInt(t.amount),
+      date: d(t.date),
+      note: t.note ?? null,
+    })),
+  });
 
   return { userId, email: DEMO_EMAIL, password: DEMO_PASSWORD };
 }

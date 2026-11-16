@@ -15,3 +15,4 @@ export * from './memorization';
 export * from './journal';
 export * from './lecture-notes';
 export * from './reminders';
+export * from './finance';

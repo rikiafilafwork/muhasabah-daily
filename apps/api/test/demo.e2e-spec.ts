@@ -43,6 +43,13 @@ describe('Data contoh (integrasi)', () => {
     const focus = (await demo.get('/focus-sessions?from=' + todayJakarta(-13)).expect(200)).body;
     expect(focus.summary.totalFocusedSeconds).toBeGreaterThan(0);
 
+    const finance = (await demo.get('/finance/summary').expect(200)).body;
+    expect(finance.income).toBeGreaterThan(0);
+    expect(finance.expense).toBeGreaterThan(0);
+    expect(finance.byCategory.length).toBeGreaterThan(2);
+    const monthly = (await demo.get('/finance/monthly?months=3').expect(200)).body;
+    expect(monthly.months.every((m: { income: number }) => m.income > 0)).toBe(true);
+
     const dhikr = (await demo.get('/dhikr/summary').expect(200)).body;
     expect(
       dhikr.groups.find((g: { group: string }) => g.group === 'pagi').completed,

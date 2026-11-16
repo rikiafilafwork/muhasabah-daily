@@ -13,6 +13,7 @@ const PAGES = [
   '/habits',
   '/goals',
   '/focus',
+  '/finance',
   '/dhikr?group=pagi',
   '/memorization',
   '/journal',
