@@ -2,7 +2,7 @@
 
 Aplikasi produktivitas Muslim open source yang dijalankan di komputermu sendiri. Jadwal, to-do, habit, goals, fokus, dzikir, hafalan, jurnal, dan catatan kajian disusun di sekitar waktu sholat.
 
-> **v1.2.0** — pengingat waktu sholat dan agenda lewat notifikasi, mode offline, dan landing page. Lihat [CHANGELOG.md](CHANGELOG.md).
+> **v1.3.0** — catatan keuangan dengan template bulanan dan anggaran (rencana vs realisasi). Lihat [CHANGELOG.md](CHANGELOG.md).
 
 ![Beranda: waktu sholat, fokus hari ini, habit, dzikir, dan agenda](docs/screenshots/beranda.png)
 
@@ -23,11 +23,13 @@ Aplikasi produktivitas Muslim open source yang dijalankan di komputermu sendiri.
 - **Mode offline**: aplikasi yang pernah dibuka tetap bisa dibuka dengan data terakhir saat server tidak terjangkau.
 - Tombol mode gelap (terang/gelap/ikuti sistem) di header, tampilan ponsel dengan tab bar bawah, dan audit aksesibilitas WCAG 2.1 AA otomatis di setiap halaman.
 
-| Jadwal hari                                                          | Habit dan insight                                         | Dzikir (gelap)                                                 |
-| -------------------------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------- |
-| ![Jadwal hari dengan waktu sholat](docs/screenshots/jadwal-hari.png) | ![Grid habit dan insight](docs/screenshots/habit.png)     | ![Dzikir pagi mode gelap](docs/screenshots/dzikir-gelap.png)   |
-| **To-Do**                                                            | **Goals**                                                 | **Fokus**                                                      |
-| ![To-Do fokus hari ini](docs/screenshots/todo.png)                   | ![Goals dengan habit tertaut](docs/screenshots/goals.png) | ![Timer fokus dan grafik mingguan](docs/screenshots/fokus.png) |
+| Jadwal hari                                                                      | Habit dan insight                                                    | Dzikir (gelap)                                                 |
+| -------------------------------------------------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------- |
+| ![Jadwal hari dengan waktu sholat](docs/screenshots/jadwal-hari.png)             | ![Grid habit dan insight](docs/screenshots/habit.png)                | ![Dzikir pagi mode gelap](docs/screenshots/dzikir-gelap.png)   |
+| **To-Do**                                                                        | **Goals**                                                            | **Fokus**                                                      |
+| ![To-Do fokus hari ini](docs/screenshots/todo.png)                               | ![Goals dengan habit tertaut](docs/screenshots/goals.png)            | ![Timer fokus dan grafik mingguan](docs/screenshots/fokus.png) |
+| **Keuangan**                                                                     | **Hafidz**                                                           | **Jurnal**                                                     |
+| ![Keuangan: rencana vs real dan rincian kategori](docs/screenshots/keuangan.png) | ![Rencana hafalan dan pemutar murottal](docs/screenshots/hafidz.png) | ![Jurnal harian](docs/screenshots/jurnal.png)                  |
 
 ## Stack
 

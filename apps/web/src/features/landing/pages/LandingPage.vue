@@ -51,6 +51,21 @@ const FEATURES = [
     text: 'Muhasabah harian dengan simpan otomatis, serta catatan kajian lengkap dengan rujukan ayat.',
     icon: 'M4 4h12l4 4v12H4zM8 12h8M8 16h5',
   },
+  {
+    title: 'Keuangan',
+    text: 'Pemasukan dan pengeluaran per kategori, template bulanan, dan anggaran yang dibandingkan dengan realisasinya.',
+    icon: 'M3 7a2 2 0 0 1 2-2h12v4M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2zM16 14.5h.01',
+  },
+  {
+    title: 'Pengingat',
+    text: 'Notifikasi saat waktu sholat masuk dan sebelum agenda dimulai, walau tab sedang ditutup.',
+    icon: 'M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21h4',
+  },
+  {
+    title: 'Offline & bisa dipasang',
+    text: 'Pasang sebagai aplikasi dari browser; data terakhir tetap bisa dibuka saat server tidak terjangkau.',
+    icon: 'M12 3v12m0 0-4-4m4 4 4-4M5 21h14',
+  },
 ];
 
 const HIGHLIGHTS = [

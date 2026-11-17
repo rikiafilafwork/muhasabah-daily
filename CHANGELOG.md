@@ -4,6 +4,8 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/id-ID/1.1.0/) dan
 
 ## [Belum dirilis]
 
+## [1.3.0] — 2026-11-17
+
 ### Ditambahkan
 
 - **Keuangan:** catat pemasukan dan pengeluaran dalam Rupiah dengan tanggal, kategori, dan catatan. Ringkasan per bulan menampilkan total pemasukan, pengeluaran, selisih, perbandingan dengan bulan lalu, dan rincian per kategori; grafik 12 bulan terakhir; kartu "Keuangan bulan ini" di Beranda. Kategori bawaan (mis. Gaji, Makan, Tagihan, Sedekah & infak, Zakat) dibuat otomatis dan bisa ditambah, diubah, atau diarsipkan. Data contoh `seed:demo` menyertakan transaksi tiga bulan.
@@ -94,6 +96,7 @@ Rilis pertama: fase 0–4 dari [peta fase](ARCHITECTURE.md#16-pemetaan-ke-fase-p
 
 - Teks dzikir dari hadis dan rujukan library habit perlu ditinjau pengelola; lihat [DATA_SOURCES.md](DATA_SOURCES.md).
 
+[1.3.0]: ../../releases/tag/v1.3.0
 [1.2.0]: ../../releases/tag/v1.2.0
 [1.1.0]: ../../releases/tag/v1.1.0
 [1.0.0]: ../../releases/tag/v1.0.0
